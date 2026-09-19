@@ -35,18 +35,21 @@
           await OneSignal.init({
             appId: savedAppId,
             allowLocalhostAsSecureOrigin: true,
+            serviceWorkerPath: 'OneSignalSDKWorker.js',
+            serviceWorkerParam: { scope: '/' },
             notifyButton: { enable: false },
           });
         }
       } catch (err) {
-        console.warn('OneSignal init notice:', err);
+        // Safe catch for local dev or missing permissions
+        console.debug('OneSignal init:', err);
       }
     });
 
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch((err) => {
-          console.log('SW registration error:', err);
+          console.debug('SW notice:', err);
         });
       });
     }

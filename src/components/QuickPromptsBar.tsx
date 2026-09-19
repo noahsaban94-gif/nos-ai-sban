@@ -12,6 +12,12 @@ const PROMPTS = [
     hoverBg: 'hover:bg-sky-50',
   },
   {
+    label: '⚡ הזמנות בסטטוס בסידור',
+    query: 'הצג את כל ההזמנות בסטטוס בסידור עבודה שלא בסטטוס סופק',
+    hoverBorder: 'hover:border-amber-400',
+    hoverBg: 'hover:bg-amber-50',
+  },
+  {
     label: '🚚 שיבוץ חכמת ועלי',
     query: '🚚 בדוק שיבוץ נהגים וסטטוס רכבים (חכמת ועלי)',
     hoverBorder: 'hover:border-amber-400',

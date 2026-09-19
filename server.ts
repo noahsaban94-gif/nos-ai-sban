@@ -9,12 +9,33 @@ dotenv.config();
 
 const PORT = 3000;
 
-let aiClient: GoogleGenAI | null = null;
-function getGeminiClient(): GoogleGenAI | null {
-  if (!aiClient && process.env.GEMINI_API_KEY) {
-    aiClient = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+let cachedKeys: string[] = [];
+
+function getAllGeminiKeys(): string[] {
+  const rawList: (string | undefined)[] = [
+    process.env.GEMINI_API_KEY,
+    process.env.GEMINI_API_KEY_1,
+    process.env.GEMINI_API_KEY_2,
+    process.env.GEMINI_API_KEY_3,
+    process.env.GEMINI_API_KEYS,
+    process.env.VITE_GEMINI_API_KEY,
+    process.env.VITE_GEMINI_API_KEY_1,
+    process.env.VITE_GEMINI_API_KEY_2,
+    process.env.VITE_GEMINI_API_KEY_3,
+  ];
+
+  const keys: string[] = [];
+  for (const item of rawList) {
+    if (!item) continue;
+    const tokens = item.split(/[\r\n,;]+/).map((s) => s.trim()).filter(Boolean);
+    for (const token of tokens) {
+      if (token && !keys.includes(token)) {
+        keys.push(token);
+      }
+    }
   }
-  return aiClient;
+  cachedKeys = keys;
+  return keys;
 }
 
 const SYSTEM_INSTRUCTIONS = `
@@ -50,10 +71,27 @@ async function startServer() {
 
   // API: Health check
   app.get('/api/health', (req, res) => {
+    const keys = getAllGeminiKeys();
     res.json({
       status: 'ok',
       service: 'noa-ai-saban-backend',
+      geminiKeysCount: keys.length,
       timestamp: new Date().toISOString()
+    });
+  });
+
+  // API: Gemini and AI status
+  app.get('/api/ai-status', (req, res) => {
+    const keys = getAllGeminiKeys();
+    res.json({
+      status: keys.length > 0 ? 'connected' : 'local-engine',
+      totalKeys: keys.length,
+      model: 'gemini-3.8-flash',
+      rotationEnabled: keys.length > 1,
+      message:
+        keys.length > 0
+          ? `מחובר בהצלחה — ${keys.length} מפתחות Gemini פעילים ברוטציה אוטומטית`
+          : 'מנוע סדרנות מקומי חכם פעיל'
     });
   });
 
@@ -68,62 +106,113 @@ async function startServer() {
 
   // API: Chat Query for Noa AI
   app.post('/api/chat', async (req, res) => {
-    const { query = '', sender = 'ראמי' } = req.body;
+    const { query = '', sender = 'ראמי', googleScriptUrl = '' } = req.body;
     const cleanQuery = String(query).trim();
 
     if (!cleanQuery) {
       return res.status(400).json({ error: 'Query is required' });
     }
 
-    // Try Gemini API if key is present
-    const ai = getGeminiClient();
-    if (ai) {
-      const candidateModels = ['gemini-3.8-flash', 'gemini-flash-latest'];
-      for (const modelName of candidateModels) {
-        try {
-          const response = await ai.models.generateContent({
-            model: modelName,
-            contents: [
-              {
-                role: 'user',
-                parts: [
-                  {
-                    text: `${SYSTEM_INSTRUCTIONS}\n\nהנה נתוני הזמנות עדכניים מסידור העבודה של ח. סבן:\n${JSON.stringify(
-                      SABAN_ORDERS.slice(0, 15),
-                      null,
-                      2
-                    )}\n\nראמי שואל/מבקש: "${cleanQuery}".\nהגיבי כנועה AI בסגנון וואטסאפ מקצועי וידידותי בפורמט HTML נקי.`
-                  }
-                ]
-              }
-            ]
-          });
+    // 1. If Google Apps Script Web App URL is provided, proxy through server (zero CORS issues!)
+    if (googleScriptUrl && typeof googleScriptUrl === 'string' && googleScriptUrl.startsWith('http')) {
+      try {
+        const gasRes = await fetch(googleScriptUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'CHAT_QUERY', query: cleanQuery, sender }),
+          redirect: 'follow'
+        });
 
-          const replyText = response.text || '';
-          if (replyText) {
+        if (gasRes.ok) {
+          const gasData: any = await gasRes.json().catch(() => null);
+          if (gasData && (gasData.htmlMessage || gasData.message)) {
             return res.json({
               status: 'ok',
-              message: replyText,
-              htmlMessage: replyText,
-              model: modelName
+              htmlMessage: gasData.htmlMessage || gasData.message,
+              source: 'google-sheets-proxy'
             });
           }
-        } catch (err: any) {
-          const errMsg = err?.message || String(err);
-          // Check for 503 high demand or 429 rate limit
-          const isOverloaded =
-            err?.status === 503 ||
-            err?.code === 503 ||
-            errMsg.includes('503') ||
-            errMsg.includes('high demand') ||
-            errMsg.includes('UNAVAILABLE');
+        }
+      } catch (gasErr) {
+        console.debug('Google Apps Script proxy notice, falling back to Gemini/local:', gasErr);
+      }
+    }
 
-          if (isOverloaded && modelName === candidateModels[0]) {
-            // Try alternative model without logging scary warnings
-            continue;
+    // 2. Try Gemini API with Multi-Key Rotation across all configured keys
+    const keys = getAllGeminiKeys();
+    if (keys.length > 0) {
+      const candidateModels = ['gemini-3.8-flash', 'gemini-flash-latest'];
+
+      for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
+        const apiKey = keys[keyIdx];
+        const ai = new GoogleGenAI({ apiKey });
+
+        for (const modelName of candidateModels) {
+          try {
+            const geminiPromise = ai.models.generateContent({
+              model: modelName,
+              contents: [
+                {
+                  role: 'user',
+                  parts: [
+                    {
+                      text: `${SYSTEM_INSTRUCTIONS}\n\nהנה נתוני הזמנות עדכניים מסידור העבודה של ח. סבן:\n${JSON.stringify(
+                        SABAN_ORDERS.slice(0, 15),
+                        null,
+                        2
+                      )}\n\nראמי שואל/מבקש: "${cleanQuery}".\nהגיבי כנועה AI בסגנון וואטסאפ מקצועי וידידותי בפורמט HTML נקי ומעוצב.`
+                    }
+                  ]
+                }
+              ]
+            });
+
+            const timeoutPromise = new Promise((_, reject) =>
+              setTimeout(() => reject(new Error('Gemini request timeout')), 6500)
+            );
+
+            const response: any = await Promise.race([geminiPromise, timeoutPromise]);
+
+            const replyText = response.text || '';
+            if (replyText) {
+              return res.json({
+                status: 'ok',
+                message: replyText,
+                htmlMessage: replyText,
+                model: modelName,
+                activeKeyIndex: keyIdx + 1,
+                totalKeys: keys.length
+              });
+            }
+          } catch (err: any) {
+            const errMsg = err?.message || String(err);
+            const isRateLimitOrQuota =
+              err?.status === 429 ||
+              err?.code === 429 ||
+              errMsg.includes('429') ||
+              errMsg.includes('Quota') ||
+              errMsg.includes('exhausted') ||
+              errMsg.includes('RESOURCE_EXHAUSTED');
+
+            const isOverloaded =
+              err?.status === 503 ||
+              err?.code === 503 ||
+              errMsg.includes('503') ||
+              errMsg.includes('high demand') ||
+              errMsg.includes('UNAVAILABLE');
+
+            if (isRateLimitOrQuota && keys.length > 1) {
+              // Rotate to next key immediately
+              console.info(`Gemini key #${keyIdx + 1} quota/limit reached. Rotating to key #${(keyIdx + 1) % keys.length + 1}`);
+              break;
+            }
+
+            if (isOverloaded && modelName === candidateModels[0]) {
+              continue;
+            }
+
+            break;
           }
-          // Log clean message and smoothly fall back to local Saban logic engine
-          break;
         }
       }
     }
@@ -271,6 +360,45 @@ async function startServer() {
           </div>
           <div class="text-[11px] font-bold text-slate-600 bg-sky-50 p-2 rounded-lg border border-sky-200">
             ראמי, לשגר את ההצעה בוואטסאפ ללקוח או להזריק ישירות להזמנת קומקס?
+          </div>
+        </div>
+      `;
+    } else if (q.includes('בסידור') || (q.includes('הזמנות') && (q.includes('סופק') || q.includes('פתוח') || q.includes('סידור')))) {
+      const activeOrders = SABAN_ORDERS.filter((o) => !o.status.includes('סופק'));
+      responseHtml = `
+        <div class="space-y-3 text-xs">
+          <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span>📋 הזמנות בסטטוס בסידור (ללא סופק)</span>
+            </span>
+            <span class="text-xs bg-amber-100 text-amber-900 font-extrabold px-2 py-0.5 rounded-full">
+              ${activeOrders.length} הזמנות פעילות
+            </span>
+          </div>
+          <div class="text-slate-600 font-bold">
+            ריכוז כל ההזמנות מתוך דשבורד סידור עבודה שטרם סופקו (בסידור / בהכנה / בהפצה):
+          </div>
+          <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+            ${activeOrders
+              .map(
+                (o) => `
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white transition space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-black text-sky-700">#${o.orderNumber} — ${o.customerName}</span>
+                  <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">${o.status}</span>
+                </div>
+                <div class="text-[11px] text-slate-600">📍 ${o.deliveryAddress}</div>
+                <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200/60 font-semibold text-slate-700">
+                  <span>🏢 ${o.warehouse} | 🚛 ${o.driver}</span>
+                  <span>🛡️ בלות: ${o.bigBagsDeposit} | משטחים: ${o.palletsDeposit}</span>
+                </div>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+          <div class="text-[11px] text-emerald-800 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+            💡 ניתן לפתוח את המגירה המקצועית או להקליק על הזמנה לקבלת פרטים מלאים וניווט Waze.
           </div>
         </div>
       `;

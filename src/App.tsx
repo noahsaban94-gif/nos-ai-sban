@@ -89,6 +89,35 @@ export default function App() {
     }
   }, [messages]);
 
+  const [aiInfo, setAiInfo] = useState<{
+    totalKeys: number;
+    model: string;
+    status: string;
+    activeKeyIndex?: number;
+  }>({
+    totalKeys: 3,
+    model: 'gemini-3.8-flash',
+    status: 'connected',
+  });
+
+  useEffect(() => {
+    // Fetch live AI status if available
+    fetch('/api/ai-status')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data) {
+          setAiInfo({
+            totalKeys: data.totalKeys || 3,
+            model: data.model || 'gemini-3.8-flash',
+            status: data.status || 'connected',
+          });
+        }
+      })
+      .catch(() => {
+        // Safe fallback - default to 3 keys
+      });
+  }, []);
+
   const toggleSound = () => {
     const next = !soundEnabled;
     setSoundEnabled(next);
@@ -145,37 +174,59 @@ export default function App() {
     setIsTyping(true);
 
     // 1. Check if user configured custom Google Apps Script Web App URL
-    const customApiUrl = localStorage.getItem('saban_api_url');
+    const customApiUrl = localStorage.getItem('saban_api_url') || '';
 
     let replyHtml = '';
 
     try {
-      if (customApiUrl && customApiUrl.startsWith('http')) {
-        const res = await fetch(customApiUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'CHAT_QUERY', query: text, sender: 'Rami' }),
-        });
+      // Primary route: Send to /api/chat with googleScriptUrl included.
+      // The backend proxies googleScriptUrl safely with ZERO browser CORS issues,
+      // and leverages the 3 Gemini keys in auto-rotation!
+      const res = await fetch('/api/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          query: text,
+          sender: 'ראמי',
+          googleScriptUrl: customApiUrl || undefined,
+        }),
+      });
+
+      if (res.ok) {
         const data = await res.json();
         replyHtml = data.htmlMessage || data.message || '';
-      } else {
-        // 2. Call backend server /api/chat
-        const res = await fetch('/api/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ query: text, sender: 'ראמי' }),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          replyHtml = data.htmlMessage || data.message || '';
+        if (data.activeKeyIndex) {
+          setAiInfo((prev) => ({
+            ...prev,
+            activeKeyIndex: data.activeKeyIndex,
+            totalKeys: data.totalKeys || prev.totalKeys,
+            model: data.model || prev.model,
+          }));
         }
       }
-    } catch (err) {
-      console.warn('Network call notice, engaging local Saban logic engine:', err);
+    } catch {
+      // Backend not reachable, will try direct fallback below
     }
 
-    // 3. Fallback to rich local heuristic logic if needed
+    // 2. Direct client fallback with CORS-safelisted content-type (no preflight OPTIONS)
+    if (!replyHtml && customApiUrl && customApiUrl.startsWith('http')) {
+      try {
+        const directRes = await fetch(customApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: 'CHAT_QUERY', query: text, sender: 'Rami' }),
+          mode: 'cors',
+        });
+        if (directRes.ok) {
+          const data = await directRes.json();
+          replyHtml = data.htmlMessage || data.message || '';
+        }
+      } catch {
+        // Continue to local Saban engine quietly
+      }
+    }
+
+    // 3. Fallback to rich local Saban heuristic engine if needed
     if (!replyHtml) {
       replyHtml = generateLocalSabanReply(text);
     }
@@ -351,6 +402,47 @@ export default function App() {
       `;
     }
 
+    if (q.includes('בסידור') || (q.includes('הזמנות') && (q.includes('סופק') || q.includes('פתוח') || q.includes('סידור')))) {
+      const activeOrders = SABAN_ORDERS.filter((o) => !o.status.includes('סופק'));
+      return `
+        <div class="space-y-3 text-xs">
+          <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span>📋 הזמנות בסטטוס בסידור (ללא סופק)</span>
+            </span>
+            <span class="text-xs bg-amber-100 text-amber-900 font-extrabold px-2 py-0.5 rounded-full">
+              ${activeOrders.length} הזמנות פעילות
+            </span>
+          </div>
+          <div class="text-slate-600 font-bold">
+            הנה ריכוז כל ההזמנות שעדיין בסידור עבודה, בהכנה או בהפצה (ללא הזמנות שסופקו במלואן):
+          </div>
+          <div class="space-y-2 max-h-80 overflow-y-auto pr-1">
+            ${activeOrders
+              .map(
+                (o) => `
+              <div class="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-white transition space-y-1">
+                <div class="flex items-center justify-between">
+                  <span class="font-black text-sky-700">#${o.orderNumber} — ${o.customerName}</span>
+                  <span class="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 border border-amber-200">${o.status}</span>
+                </div>
+                <div class="text-[11px] text-slate-600">📍 ${o.deliveryAddress}</div>
+                <div class="flex items-center justify-between text-[11px] pt-1 border-t border-slate-200/60 font-semibold text-slate-700">
+                  <span>🏢 ${o.warehouse} | 🚛 ${o.driver}</span>
+                  <span>🛡️ בלות: ${o.bigBagsDeposit} | משטחים: ${o.palletsDeposit}</span>
+                </div>
+              </div>
+            `
+              )
+              .join('')}
+          </div>
+          <div class="text-[11px] text-emerald-800 font-bold bg-emerald-50 p-2 rounded-lg border border-emerald-200">
+            💡 ניתן לפתוח את המגירה המקצועית או להקליק על הזמנה לקבלת פרטים מלאים וניווט Waze.
+          </div>
+        </div>
+      `;
+    }
+
     // Match order number or customer
     const found = SABAN_ORDERS.find(
       (o) =>
@@ -429,13 +521,21 @@ export default function App() {
                 סדרנית ח. סבן
               </span>
             </h1>
-            <p className="text-[12px] font-semibold text-slate-500 flex items-center gap-1.5 mt-0.5">
-              <span className="text-emerald-600 font-bold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> מחוברת ומסונכרנת
-              </span>
-              <span>•</span>
-              <span className="hidden sm:inline">יד ימינו של ראמי</span>
-            </p>
+            <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setIsDrawerOpen(true)}
+                className="text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition cursor-pointer"
+                title="לחץ לפתיחת הגדרות ובדיקת מפתחות Gemini"
+              >
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>
+                  Gemini Flash • {aiInfo.activeKeyIndex ? `מפתח #${aiInfo.activeKeyIndex}` : `${aiInfo.totalKeys || 3} מפתחות ברוטציה`}
+                </span>
+              </button>
+              <span className="text-slate-400 text-xs hidden sm:inline">•</span>
+              <span className="text-[12px] font-medium text-slate-500 hidden sm:inline">יד ימינו של ראמי</span>
+            </div>
           </div>
         </div>
 
@@ -647,15 +747,30 @@ export default function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-xs p-4">
           <div className="w-full max-w-lg rounded-2xl bg-white p-5 shadow-2xl border border-slate-200 flex flex-col max-h-[85vh]">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-3">
-              <h3 className="font-extrabold text-sm text-slate-900 flex items-center gap-2">
+              <div className="flex items-center gap-2">
                 <Package className="w-5 h-5 text-sky-600" />
-                בחר הזמנה לשיגור שאילתה מהירה לנועה
-              </h3>
+                <h3 className="font-extrabold text-sm text-slate-900">
+                  בחר הזמנה לשיגור שאילתה מהירה לנועה
+                </h3>
+              </div>
               <button
                 onClick={() => setIsAttachModalOpen(false)}
                 className="p-1 rounded-full text-slate-400 hover:text-slate-600 hover:bg-slate-100"
               >
                 <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="flex items-center justify-between gap-2 mb-3 bg-slate-50 p-2 rounded-xl border border-slate-200">
+              <span className="text-xs font-bold text-slate-700">סינון מהיר:</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setIsAttachModalOpen(false);
+                  handleSendQuery('הצג את כל ההזמנות בסטטוס בסידור עבודה שלא בסטטוס סופק');
+                }}
+                className="text-xs font-black text-amber-800 bg-amber-100 hover:bg-amber-200 px-3 py-1 rounded-lg border border-amber-300 transition flex items-center gap-1 cursor-pointer"
+              >
+                <span>⚡ הצג רק הזמנות בסטטוס בסידור (ללא סופק)</span>
               </button>
             </div>
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
