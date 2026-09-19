@@ -20,6 +20,7 @@ import { ProfessionalDrawer } from './components/ProfessionalDrawer';
 import { QuickPromptsBar } from './components/QuickPromptsBar';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
+import { WarehouseOrdersChart } from './components/WarehouseOrdersChart';
 
 const AVATAR_URL = 'https://i.ibb.co/GQfHTYZH/Gemini-Generated-Image-7.png';
 
@@ -193,8 +194,78 @@ export default function App() {
     playNotificationChime(soundEnabled);
   };
 
+  const handleShareChartToChat = (payload: {
+    title: string;
+    summary: string;
+    statsText: string;
+    actionPrompt?: string;
+  }) => {
+    const time = new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
+
+    // Add user intent message
+    const userMsg: ChatMessage = {
+      id: `user-${Date.now()}`,
+      sender: 'rami',
+      text: '📊 שיתוף ניתוח גרף שבועי: סניף 4 החרש מול סניף 1 התלמיד',
+      timestamp: time,
+    };
+
+    // Add Noa response with embedded interactive chart card & action prompt buttons
+    const noaMsg: ChatMessage = {
+      id: `noa-${Date.now() + 1}`,
+      sender: 'noa',
+      text: `${payload.title}\n${payload.summary}`,
+      timestamp: time,
+      actionCard: {
+        type: 'chart_analysis',
+        data: payload,
+      },
+    };
+
+    setMessages((prev) => [...prev, userMsg, noaMsg]);
+    setIsDrawerOpen(false);
+    playNotificationChime(soundEnabled);
+  };
+
   const generateLocalSabanReply = (query: string): string => {
     const q = query.toLowerCase();
+
+    if (q.includes('גרף') || q.includes('נתח') || q.includes('עומס') || (q.includes('החרש') && q.includes('התלמיד'))) {
+      return `
+        <div class="space-y-3 text-xs">
+          <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span>📊 ניתוח עומסי עבודה שבועי — ח. סבן</span>
+            </span>
+            <span class="text-[11px] bg-sky-100 text-sky-800 font-extrabold px-2 py-0.5 rounded-full">מחסן 4 מול 1</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 font-bold">
+            <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-slate-800 space-y-1">
+              <div class="text-sky-900 font-black">סניף 4 החרש (70% מהנפח)</div>
+              <div class="text-[11px] text-slate-600">70 הזמנות שבועיות: בלות סומסום, חול, טיט, מלט ובלוקים.</div>
+              <div class="text-[10px] text-sky-700 font-bold bg-white p-1 rounded border border-sky-100">
+                עומס מנוף גבוה: חכמת בשיא התפוסה (14 פריקות יומיות).
+              </div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-slate-800 space-y-1">
+              <div class="text-emerald-900 font-black">סניף 1 התלמיד (30% מהנפח)</div>
+              <div class="text-[11px] text-slate-600">30 הזמנות שבועיות: לוחות גבס, פרופילי פח, שפכטל וצבעים.</div>
+              <div class="text-[10px] text-emerald-700 font-bold bg-white p-1 rounded border border-emerald-100">
+                איסוזו פתוחה של עלי: גמישות גבוהה, 9 סבבי חלוקה.
+              </div>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 font-bold space-y-1">
+            <div class="text-[11px] font-black">💡 מסקנות והמלצות תפעוליות לראמי:</div>
+            <ul class="list-disc list-inside text-[11px] space-y-0.5 text-slate-700">
+              <li><strong>יום השיא:</strong> ימי שני ורביעי מציגים את עיקר הלחץ על פריקות המנוף בהוד השרון וכפר סבא.</li>
+              <li><strong>איזון עומסים:</strong> מומלץ להסיט הובלות ללא פריקה (גבס ופרופילים) מהחרש לאיסוזו של עלי כדי לשחרר את חכמת לקווי מנוף בלבד.</li>
+              <li><strong>בקרת פקדונות 1:1:</strong> 70 בלות בסניף 4 דורשות בדיקת קומקס קפדנית של מק"ט 60002.</li>
+            </ul>
+          </div>
+        </div>
+      `;
+    }
 
     if (q.includes('דוח בוקר') || q.includes('סידור עבודה') || q.includes('דוח יומי')) {
       return `
@@ -478,6 +549,16 @@ export default function App() {
                       {m.text}
                     </div>
                   )}
+
+                  {/* Render Embedded Interactive Chart Card if present */}
+                  {m.actionCard?.type === 'chart_analysis' && (
+                    <div className="mt-3 pt-3 border-t border-slate-200">
+                      <WarehouseOrdersChart
+                        className="p-3 bg-slate-50/60 border-sky-200"
+                        onSelectPrompt={(prompt) => handleSendQuery(prompt)}
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             );
@@ -558,6 +639,7 @@ export default function App() {
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
         onSelectOrderPrompt={(p) => handleSendQuery(p)}
+        onShareChartToChat={handleShareChartToChat}
       />
 
       {/* Attach / Quick Order Selection Modal */}

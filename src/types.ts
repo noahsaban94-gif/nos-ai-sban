@@ -27,7 +27,7 @@ export interface ChatMessage {
   timestamp: string;
   htmlContent?: string;
   actionCard?: {
-    type: 'order' | 'morning_report' | 'driver_status' | 'deposit_calc' | 'quote' | 'waze_route';
+    type: 'order' | 'morning_report' | 'driver_status' | 'deposit_calc' | 'quote' | 'waze_route' | 'chart_analysis';
     data?: any;
   };
 }

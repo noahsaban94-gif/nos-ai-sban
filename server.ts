@@ -168,6 +168,49 @@ async function startServer() {
           </div>
         </div>
       `;
+    } else if (q.includes('גרף') || q.includes('נתח') || q.includes('עומס') || (q.includes('החרש') && q.includes('התלמיד'))) {
+      responseHtml = `
+        <div class="space-y-3 text-xs">
+          <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1.5 flex items-center justify-between">
+            <span class="flex items-center gap-1.5">
+              <span>📊 ניתוח עומסי עבודה שבועי — ח. סבן</span>
+            </span>
+            <span class="text-[11px] bg-sky-100 text-sky-800 font-extrabold px-2 py-0.5 rounded-full">מחסן 4 מול 1</span>
+          </div>
+          <div class="grid grid-cols-2 gap-2 font-bold">
+            <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-slate-800 space-y-1">
+              <div class="text-sky-900 font-black flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-sky-600"></span>
+                סניף 4 החרש (70% מהנפח)
+              </div>
+              <div class="text-[11px] text-slate-600">70 הזמנות שבועיות: בלות סומסום, חול, טיט, מלט ובלוקים.</div>
+              <div class="text-[10px] text-sky-700 font-bold bg-white p-1 rounded border border-sky-100">
+                עומס מנוף גבוה: חכמת בשיא התפוסה (14 פריקות יומיות).
+              </div>
+            </div>
+            <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-slate-800 space-y-1">
+              <div class="text-emerald-900 font-black flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+                סניף 1 התלמיד (30% מהנפח)
+              </div>
+              <div class="text-[11px] text-slate-600">30 הזמנות שבועיות: לוחות גבס, פרופילי פח, שפכטל וצבעים.</div>
+              <div class="text-[10px] text-emerald-700 font-bold bg-white p-1 rounded border border-emerald-100">
+                איסוזו פתוחה של עלי: גמישות גבוהה, 9 סבבי חלוקה.
+              </div>
+            </div>
+          </div>
+          <div class="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 font-bold space-y-1">
+            <div class="text-[11px] font-black flex items-center gap-1">
+              <span>💡 מסקנות והמלצות תפעוליות לראמי:</span>
+            </div>
+            <ul class="list-disc list-inside text-[11px] space-y-0.5 text-slate-700">
+              <li><strong>יום השיא:</strong> ימי שני ורביעי מציגים את עיקר הלחץ על פריקות המנוף בהוד השרון וכפר סבא.</li>
+              <li><strong>איזון עומסים:</strong> מומלץ להסיט הובלות ללא פריקה (גבס ופרופילים) מהחרש לאיסוזו של עלי כדי לשחרר את חכמת לקווי מנוף בלבד.</li>
+              <li><strong>בקרת פקדונות 1:1:</strong> 70 בלות בסניף 4 דורשות בדיקת קומקס קפדנית של מק"ט 60002.</li>
+            </ul>
+          </div>
+        </div>
+      `;
     } else if (q.includes('שיבוץ') || q.includes('נהג') || q.includes('חכמת') || q.includes('עלי') || q.includes('רכב')) {
       responseHtml = `
         <div class="space-y-2.5">

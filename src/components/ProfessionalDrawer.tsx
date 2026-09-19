@@ -20,12 +20,19 @@ interface ProfessionalDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   onSelectOrderPrompt: (promptText: string) => void;
+  onShareChartToChat?: (payload: {
+    title: string;
+    summary: string;
+    statsText: string;
+    actionPrompt?: string;
+  }) => void;
 }
 
 export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
   isOpen,
   onClose,
   onSelectOrderPrompt,
+  onShareChartToChat,
 }) => {
   const [apiUrl, setApiUrl] = useState(() => localStorage.getItem('saban_api_url') || '');
   const [onesignalId, setOnesignalId] = useState(() => localStorage.getItem('onesignal_app_id') || '');
@@ -237,7 +244,18 @@ export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
           </div>
 
           {/* Weekly Warehouse Orders Bar Chart (Recharts) */}
-          <WarehouseOrdersChart />
+          <WarehouseOrdersChart
+            onShareToChat={(payload) => {
+              if (onShareChartToChat) {
+                onShareChartToChat(payload);
+                onClose();
+              }
+            }}
+            onSelectPrompt={(prompt) => {
+              onSelectOrderPrompt(prompt);
+              onClose();
+            }}
+          />
 
           {/* System sheets links */}
           <div className="space-y-2">
