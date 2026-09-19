@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0284c7" />
+      <stop offset="100%" stop-color="#0369a1" />
+    </linearGradient>
+    <linearGradient id="bubbleGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" />
+      <stop offset="100%" stop-color="#f8fafc" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="128" fill="url(#skyGrad)" />
+  <circle cx="256" cy="230" r="140" fill="url(#bubbleGrad)" filter="drop-shadow(0 12px 24px rgba(0,0,0,0.15))" />
+  <!-- Saban Letter / Logo mark 'ס' and Logistics Truck & Heart -->
+  <path d="M256 140 C210 140 175 175 175 220 C175 265 210 300 256 300 C290 300 318 280 330 250 L290 250 C282 265 270 274 256 274 C225 274 202 250 202 220 C202 190 225 166 256 166 C280 166 295 180 305 195 L335 175 C318 153 290 140 256 140 Z" fill="#0284c7" />
+  <!-- Heart -->
+  <path d="M370 170 C370 155 355 145 342 155 C330 165 320 180 320 180 C320 180 310 165 298 155 C285 145 270 155 270 170 C270 195 320 225 320 225 C320 225 370 195 370 170 Z" fill="#ef4444" />
+  <!-- Base badge: ח. סבן חומרי בניין -->
+  <rect x="96" y="380" width="320" height="60" rx="30" fill="#ffffff" />
+  <text x="256" y="420" font-family="system-ui, -apple-system, sans-serif" font-weight="900" font-size="24" text-anchor="middle" fill="#0369a1">נועה AI • ח. סבן</text>
+</svg>

@@ -1,0 +1,6 @@
+{
+  "name": "נועה AI — מוח לוגיסטי וסדרנות",
+  "description": "מוח לוגיסטי וסדרנות עבודה חכמה עבור ח. סבן חומרי בניין (1994) בע״מ — מעקב הזמנות, שיבוץ נהגים, דוחות בוקר, חישוב פקדונות וסנכרון גיליונות.",
+  "requestFramePermissions": ["microphone"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
