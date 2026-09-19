@@ -27,9 +27,35 @@ export interface ChatMessage {
   timestamp: string;
   htmlContent?: string;
   actionCard?: {
-    type: 'order' | 'morning_report' | 'driver_status' | 'deposit_calc' | 'quote' | 'waze_route' | 'chart_analysis';
+    type:
+      | 'order'
+      | 'morning_report'
+      | 'driver_status'
+      | 'deposit_calc'
+      | 'quote'
+      | 'waze_route'
+      | 'chart_analysis'
+      | 'sheet_control'
+      | 'order_mutation'
+      | 'webhook_dispatch';
     data?: any;
   };
+}
+
+export interface SheetDiscrepancy {
+  orderNumber: string;
+  customerName: string;
+  issue: string;
+  severity: 'high' | 'medium' | 'info';
+  status: string;
+  hasDeliveryNote: string;
+}
+
+export interface SheetMutationResult {
+  action: 'update_status' | 'reassign_driver' | 'add_order' | 'update_note' | 'toggle_delivery_note';
+  order: SabanOrder;
+  previousValue?: string;
+  newValue?: string;
 }
 
 export interface DriverInfo {

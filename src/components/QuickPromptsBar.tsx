@@ -6,6 +6,30 @@ interface QuickPromptsBarProps {
 
 const PROMPTS = [
   {
+    label: '🧪 בדיקת ווביהוק Make',
+    query: 'ליצור בדיקת ווביהוק https://hook.eu1.make.com/yvywlj4kpryenbte86oedh4826glhb3u',
+    hoverBorder: 'hover:border-emerald-500',
+    hoverBg: 'hover:bg-emerald-50',
+  },
+  {
+    label: '📲 שידור וואטסאפ (5040087)',
+    query: 'תאפשר שליחת הודעת ווצאף ווביהוק להזמנה 5040087 של אידלסון הראל',
+    hoverBorder: 'hover:border-emerald-500',
+    hoverBg: 'hover:bg-emerald-50',
+  },
+  {
+    label: '📊 בקרת גיליונות וחריגות',
+    query: 'בצע בקרה והצלבת נתונים בגיליונות וחפש חריגות או תעודות משלוח חסרות',
+    hoverBorder: 'hover:border-emerald-500',
+    hoverBg: 'hover:bg-emerald-50',
+  },
+  {
+    label: '✅ עדכן סופק (6215454)',
+    query: 'עדכן סטטוס סופק במלואו להזמנה 6215454 בגיליון',
+    hoverBorder: 'hover:border-emerald-500',
+    hoverBg: 'hover:bg-emerald-50',
+  },
+  {
     label: '📋 דוח בוקר מרוכז',
     query: '📋 הפק דוח בוקר יומי מרוכז לסידור',
     hoverBorder: 'hover:border-sky-400',
@@ -22,6 +46,12 @@ const PROMPTS = [
     query: '🚚 בדוק שיבוץ נהגים וסטטוס רכבים (חכמת ועלי)',
     hoverBorder: 'hover:border-amber-400',
     hoverBg: 'hover:bg-amber-50',
+  },
+  {
+    label: '🔄 העבר הזמנה לעלי',
+    query: 'העבר את הזמנה 6215454 לעלי באיסוזו פתוחה',
+    hoverBorder: 'hover:border-indigo-400',
+    hoverBg: 'hover:bg-indigo-50',
   },
   {
     label: '🛡️ בדיקת פקדונות (1:1)',

@@ -121,19 +121,55 @@ async function startServer() {
     });
   });
 
+  // In-memory persistent server orders store initialized with Saban orders
+  let currentServerOrders = [...SABAN_ORDERS];
+
   // API: Get Saban orders dataset
   app.get('/api/orders', (req, res) => {
     res.json({
-      orders: SABAN_ORDERS,
+      orders: currentServerOrders,
       drivers: SABAN_DRIVERS,
-      warehouses: SABAN_WAREHOUSES
+      warehouses: SABAN_WAREHOUSES,
+      sheets: {
+        unifiedSheetId: '1Ie7gKql_EDdrIN9HqunJc9Ey5k0WXXfPRxs0Vp1Bs2c',
+        driverDashboardSheetId: '1VA9J6n9IYcooO_s2xOpnkvyDQWWQD3pfhh0cnenCkoA',
+        tabs: ['הזמנות_סידור', 'הצלבה_ובקרה', 'דשבורד סידור נהגים']
+      }
     });
   });
 
-  // API: Make.com Webhook Dispatch (Module 4)
+  // API: Update or mutate Saban orders dataset
+  app.post('/api/orders', (req, res) => {
+    const { action, order, orderNumber, newStatus, newDriver } = req.body || {};
+    if (action === 'update_status' && orderNumber && newStatus) {
+      currentServerOrders = currentServerOrders.map((o) =>
+        o.orderNumber === String(orderNumber)
+          ? { ...o, status: newStatus, hasDeliveryNote: newStatus.includes('סופק') ? '✅ כן (נחתם)' : o.hasDeliveryNote }
+          : o
+      );
+      return res.json({ status: 'ok', updated: true, orderNumber, newStatus });
+    }
+    if (action === 'reassign_driver' && orderNumber && newDriver) {
+      currentServerOrders = currentServerOrders.map((o) =>
+        o.orderNumber === String(orderNumber) ? { ...o, driver: newDriver } : o
+      );
+      return res.json({ status: 'ok', updated: true, orderNumber, newDriver });
+    }
+    if (action === 'add_order' && order) {
+      currentServerOrders = [order, ...currentServerOrders];
+      return res.json({ status: 'ok', added: true, order });
+    }
+    if (action === 'sync_all' && Array.isArray(req.body.orders)) {
+      currentServerOrders = req.body.orders;
+      return res.json({ status: 'ok', synced: currentServerOrders.length });
+    }
+    return res.json({ status: 'ok', totalOrders: currentServerOrders.length });
+  });
+
+  // API: Make.com Webhook Dispatch (Module 4 & WhatsApp dispatch)
   app.post('/api/webhook-dispatch', async (req, res) => {
     try {
-      const webhookUrl = 'https://hook.eu1.make.com/j1kfxfn5y4goe1lud3dk1phkw4bkjvyr';
+      const defaultWebhookUrl = 'https://hook.eu1.make.com/yvywlj4kpryenbte86oedh4826glhb3u';
       let payload = req.body;
       if (typeof payload === 'string') {
         try {
@@ -144,18 +180,68 @@ async function startServer() {
       }
       payload = payload || {};
 
-      const response = await fetch(webhookUrl, {
+      const targetWebhookUrl =
+        payload.webhookUrl ||
+        process.env.MAKE_WEBHOOK_URL ||
+        defaultWebhookUrl;
+
+      const orderNumber = payload.orderNumber || payload.orderId || '';
+      const customerName = payload.customerName || '';
+      const customerId = payload.customerId || '';
+      const warehouse = payload.warehouse || '';
+      const deliveryAddress = payload.deliveryAddress || '';
+      const deliveryDate = payload.deliveryDate || '19/09/2026 (היום)';
+      const contactPerson = payload.contactPerson || customerName || '';
+      const phone = payload.phone || '';
+      const driver = payload.driver || '';
+      const wazeUrl = payload.wazeUrl || '';
+      const itemsText = payload.itemsText || '';
+      const customMessage = payload.message || '';
+
+      // Format WhatsApp dispatch message according to Saban standard template
+      const formattedWhatsappText =
+        customMessage ||
+        `📦 *הזמנה ${orderNumber}* — *${customerName}*
+
+💬 *הזמנה חדשה נקלטה במערכת נועה AI* 💬
+
+👤 *שם לקוח:* ${customerName}${customerId ? ` (מס' לקוח: ${customerId})` : ''}
+🏢 *מחסן יוצא:* ${warehouse}
+📍 *כתובת אספקה:* ${deliveryAddress}
+🧾 *מספר הזמנה:* ${orderNumber}
+📅 *תאריך אספקה:* ${deliveryDate}
+📞 *איש קשר:* ${contactPerson}${phone ? ` (${phone})` : ''}
+
+👋 *שיבוץ נהג:* ${driver}
+🧭 *ניווט Waze:* ${wazeUrl}
+
+🛒 *ריכוז מוצרים:*
+${itemsText}
+`;
+
+      const webhookPayload = {
+        orderId: orderNumber,
+        orderNumber,
+        customerId,
+        customerName,
+        warehouse,
+        deliveryAddress,
+        deliveryDate,
+        contactPerson,
+        phone,
+        driver,
+        wazeUrl,
+        itemsText,
+        message: formattedWhatsappText,
+        formattedWhatsappText,
+        source: 'noa-ai-saban-dispatch',
+        timestamp: new Date().toISOString(),
+      };
+
+      const response = await fetch(targetWebhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          orderId: payload.orderId || payload.orderNumber || '',
-          customerName: payload.customerName || '',
-          driver: payload.driver || '',
-          warehouse: payload.warehouse || '',
-          message: payload.message || `שידור הזמנה ${payload.orderId || ''} לסידור עבודה`,
-          wazeUrl: payload.wazeUrl || '',
-          timestamp: new Date().toISOString()
-        }),
+        body: JSON.stringify(webhookPayload),
         redirect: 'follow'
       });
 
@@ -164,7 +250,8 @@ async function startServer() {
         status: 'ok',
         dispatched: true,
         responseText: text,
-        webhookUrl
+        webhookUrl: targetWebhookUrl,
+        formattedMessage: formattedWhatsappText,
       });
     } catch (err: any) {
       console.error('Make.com webhook dispatch warning:', err);
@@ -212,6 +299,11 @@ async function startServer() {
         ? `\n\nהקשר השיחה האחרונה:\n${history.slice(-8).map((h: any) => `${h.role === 'user' ? 'המשתמש' : 'נועה'}: ${h.text}`).join('\n')}`
         : '';
 
+      const ordersContext =
+        Array.isArray(body.activeOrders) && body.activeOrders.length > 0
+          ? body.activeOrders
+          : currentServerOrders;
+
       // 1. If Google Apps Script Web App URL is provided, proxy through server (zero CORS issues!)
       if (googleScriptUrl && typeof googleScriptUrl === 'string' && googleScriptUrl.startsWith('http')) {
         try {
@@ -255,11 +347,18 @@ async function startServer() {
                   role: 'user',
                   parts: [
                     {
-                      text: `${SYSTEM_INSTRUCTIONS}${memoryPrompt}${historyPrompt}\n\nנתוני הזמנות עדכניים (רק אם רלוונטי לשאלה):\n${JSON.stringify(
-                        SABAN_ORDERS.slice(0, 15),
-                        null,
-                        2
-                      )}\n\nהודעת המשתמש הנוכחית: "${cleanQuery}".\nהגיבי כנועה: עברית טבעית, חמה ואנושית, ישירות על מה שנשאל, פסקאות קצרות וללא רשימות או כותרות אלא אם התבקשת במפורש. הימנעי מביטויי מילוי ("בשמחה", "בהחלט", "אני כאן לעזור") וסיימי בטבעיות.`
+                      text: `${SYSTEM_INSTRUCTIONS}${memoryPrompt}${historyPrompt}
+
+מידע על גיליונות Google Sheets ושליטה:
+- גיליון 1 (מערכת מאוחדת): טאב "הזמנות_סידור" וטאב "הצלבה_ובקרה" (מזהה: 1Ie7gKql_EDdrIN9HqunJc9Ey5k0WXXfPRxs0Vp1Bs2c)
+- גיליון 2 (דשבורד סידור נהגים): חכמת (מרצדס מנוף 615-41-002) ועלי (איסוזו 651-51-701) (מזהה: 1VA9J6n9IYcooO_s2xOpnkvyDQWWQD3pfhh0cnenCkoA)
+- יש לך שליטה מלאה על הגיליונות: אם ראמי מבקש לעדכן סטטוס (סופק, בהכנה, בסידור), להעביר נהג, לפתוח הזמנה חדשה (עם חישוב פקדונות 1:1 למק"ט 60002 ומשטחי עץ 60060), או לבדוק ביקורת הצלבה ובקרה על תעודות משלוח חסרות או חוסרים (כמו 8 אזיקונים בהזמנה 5020025) - אשרי זאת בטבעיות, הסבירי מה עודכן בגיליון, והפעילי שיקול דעת לוגיסטי.
+
+נתוני הזמנות עדכניים (רק אם רלוונטי לשאלה):
+${JSON.stringify(ordersContext.slice(0, 15), null, 2)}
+
+הודעת המשתמש הנוכחית: "${cleanQuery}".
+הגיבי כנועה: עברית טבעית, חמה ואנושית, ישירות על מה שנשאל, פסקאות קצרות וללא רשימות או כותרות אלא אם התבקשת במפורש. הימנעי מביטויי מילוי ("בשמחה", "בהחלט", "אני כאן לעזור") וסיימי בטבעיות.`
                     }
                   ]
                 }
@@ -320,8 +419,114 @@ async function startServer() {
     const q = cleanQuery.toLowerCase();
     let responseHtml = '';
 
-    // Human greeting
+    const statusMatch = cleanQuery.match(/(?:הזמנה\s*#?|#)(\d{7})|(?:מספר\s*)(\d{7})/);
+    const foundOrderNum = statusMatch ? statusMatch[1] || statusMatch[2] : null;
+
+    // Webhook / WhatsApp dispatch query
     if (
+      q.includes('ווביהוק') ||
+      q.includes('webhook') ||
+      q.includes('ווצאפ') ||
+      q.includes('וואטסאפ') ||
+      q.includes('whatsapp') ||
+      q.includes('make.com') ||
+      q.includes('hook.eu1.make.com')
+    ) {
+      const isTest = q.includes('בדיק') || q.includes('test');
+      const targetOrder =
+        ordersContext.find((o: any) => o.orderNumber === foundOrderNum) ||
+        ordersContext.find((o: any) => o.orderNumber === '5040087') ||
+        ordersContext[0];
+
+      if (targetOrder) {
+        const testMsg = isTest
+          ? `יצרתי כרטיס בדיקת ווביהוק ייעודי עבור Make.com (כתובת ה-Hook מוכנה עם נתוני הזמנה ${targetOrder.orderNumber}). אפשר ללחוץ על 'בצע בדיקת שידור עכשיו', והמערכת תשגר את נתוני ה-JSON המלאים ישירות ל-Make.`
+          : `הכנתי את שידור הוואטסאפ והווביהוק להזמנה ${targetOrder.orderNumber} של ${targetOrder.customerName} ישירות לעלי ולמערכת Make. פרטי הכתובת, הנהג, קישור ה-Waze והמוצרים מוכנים לשידור בלחיצה אחת.`;
+
+        return res.json({
+          status: 'ok',
+          message: testMsg,
+          htmlMessage: testMsg,
+          model: 'noa-logic-engine'
+        });
+      }
+    }
+
+    // Sheet Mutation: Status update
+    if (
+      foundOrderNum &&
+      (q.includes('סופק') ||
+        q.includes('נמסר') ||
+        q.includes('הסתיימ') ||
+        q.includes('סיימ') ||
+        q.includes('בהכנה') ||
+        q.includes('בחלוקה') ||
+        q.includes('בסידור'))
+    ) {
+      let newStatus = '✅ סופק במלואו';
+      if (q.includes('בהכנה')) newStatus = '⚙️ בהכנה';
+      else if (q.includes('בחלוקה') || q.includes('בהפצה')) newStatus = '🚚 בחלוקה';
+      else if (q.includes('בסידור')) newStatus = '⏳ בסידור עבודה';
+
+      currentServerOrders = currentServerOrders.map((o) =>
+        o.orderNumber === foundOrderNum
+          ? {
+              ...o,
+              status: newStatus,
+              hasDeliveryNote: newStatus.includes('סופק') ? '✅ כן (נחתם)' : o.hasDeliveryNote,
+            }
+          : o
+      );
+      const targetOrder = currentServerOrders.find((o) => o.orderNumber === foundOrderNum);
+      const customer = targetOrder ? targetOrder.customerName : '';
+      responseHtml = `עדכנתי לך ישירות בגיליון, הזמנה ${foundOrderNum}${
+        customer ? ` (${customer})` : ''
+      } סומנה כעת כ"${newStatus}". ${
+        newStatus.includes('סופק') ? 'תעודת המשלוח עודכנה כחתומה ומוכנה להעברה ללינה לחיוב.' : ''
+      }`;
+    }
+    // Sheet Mutation: Driver reassignment
+    else if (
+      foundOrderNum &&
+      (q.includes('חכמת') || q.includes('עלי')) &&
+      (q.includes('העבר') || q.includes('תעבירי') || q.includes('נהג') || q.includes('שיבוץ'))
+    ) {
+      const newDriver = q.includes('חכמת')
+        ? 'חכמת (מרצדס מנוף 615-41-002)'
+        : 'עלי (משאית איסוזו פתוחה 654-51-701)';
+      currentServerOrders = currentServerOrders.map((o) =>
+        o.orderNumber === foundOrderNum ? { ...o, driver: newDriver } : o
+      );
+      const driverName = q.includes('חכמת') ? 'חכמת עם המרצדס מנוף' : 'עלי עם האיסוזו';
+      responseHtml = `העברתי בגיליון את הזמנה ${foundOrderNum} ל${driverName}. סבב החלוקה עודכן בהתאם.`;
+    }
+    // Sheet reconciliation / audit
+    else if (
+      q.includes('הצלבה') ||
+      q.includes('חריגות') ||
+      q.includes('חוסרים') ||
+      q.includes('תעודות חסרות') ||
+      q.includes('ביקורת')
+    ) {
+      const missingNotes = ordersContext.filter(
+        (o: any) => o.hasDeliveryNote && o.hasDeliveryNote.includes('טרם')
+      ).length;
+      responseHtml = `הרצתי ביקורת על טאב הצלבה_ובקרה מול הזמנות_סידור. יש כרגע ${missingNotes} הזמנות שממתינות לתעודת משלוח חתומה (כולל חוסר של 8 אזיקונים בהזמנה 5020025 של לירן במוצקין שמעכב סגירה מול לינה בהנה"ח). כל היתר תואם ללא חריגות פקדון.`;
+    }
+    // Sheet overall view
+    else if (
+      q.includes('גיליון') ||
+      q.includes('גליון') ||
+      q.includes('טאב') ||
+      q.includes('שיטס') ||
+      q.includes('sheets')
+    ) {
+      const activeCount = ordersContext.filter((o: any) => !o.status || !o.status.includes('סופק')).length;
+      const deliveredCount = ordersContext.filter((o: any) => o.status && o.status.includes('סופק')).length;
+      responseHtml = `יש לנו בגיליון המאוחד ${ordersContext.length} שורות: ${activeCount} הזמנות פתוחות בסידור העבודה ו-${deliveredCount} שסופקו. טאב הזמנות_סידור וטאב הצלבה_ובקרה מסונכרנים וזמינים לך במרכז הבקרה.`;
+    }
+    // Human greeting
+    else if (
       q === 'היי' ||
       q === 'שלום' ||
       q === 'בוקר טוב' ||

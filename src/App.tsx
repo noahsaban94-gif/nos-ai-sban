@@ -17,7 +17,7 @@ import {
   Sparkles,
   Brain
 } from 'lucide-react';
-import { ChatMessage, OperationalMemoryItem } from './types';
+import { ChatMessage, OperationalMemoryItem, SabanOrder } from './types';
 import { SABAN_ORDERS } from './data/sabanData';
 import { playNotificationChime } from './utils/audio';
 import { ProfessionalDrawer } from './components/ProfessionalDrawer';
@@ -26,6 +26,9 @@ import { PWAInstallButton } from './components/PWAInstallButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { WarehouseOrdersChart } from './components/WarehouseOrdersChart';
 import { OperationalMemoryModal } from './components/OperationalMemoryModal';
+import { GoogleSheetsManagerModal } from './components/GoogleSheetsManagerModal';
+import { InteractiveActionCard } from './components/InteractiveActionCard';
+import { processLogicAndSheetCommand } from './utils/sabanSheetEngine';
 
 const AVATAR_URL = 'https://i.ibb.co/GQfHTYZH/Gemini-Generated-Image-7.png';
 
@@ -105,25 +108,17 @@ const INITIAL_NOA_MESSAGE: ChatMessage = {
   id: 'init-1',
   sender: 'noa',
   timestamp: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
-  text: 'שלום ראמי! ❤️ נועה כאן, יד ימינך בסדרנות ח. סבן חומרי בניין (1994) בע״מ.',
-  htmlContent: `
-    <div class="space-y-2 text-slate-900 font-bold text-sm leading-relaxed">
-      <div class="font-extrabold text-base text-slate-900">
-        שלום ראמי! ❤️ נועה כאן, יד ימינך בסדרנות ח. סבן חומרי בניין (1994) בע״מ.
-      </div>
-      <div class="text-slate-800 text-xs leading-relaxed font-semibold">
-        אני מחוברת ומסונכרנת עם כל הגיליונות, הקומקס וצי הרכבים:
-        <ul class="list-disc list-inside mt-1 font-bold text-slate-900 space-y-0.5">
-          <li><strong>סניף 4 החרש:</strong> חכמת במרצדס מנוף (615-41-002) — בלות ומשטחים כבדים.</li>
-          <li><strong>סניף 1 התלמיד:</strong> עלי באיסוזו פתוחה (654-51-701) — לוחות גבס וחלוקה.</li>
-          <li><strong>מערך פקדונות 1:1:</strong> מעקב קפדני אחר שקים גדולים (60002) ומשטחי סבן (60060).</li>
-        </ul>
-      </div>
-      <div class="text-xs font-black text-sky-950 bg-sky-50 p-2.5 rounded-xl border border-sky-200">
-        במה נתחיל היום ראמי? תוכל לבחור פקודה מהירה למטה או להקליד כל שאלה.
-      </div>
-    </div>
-  `
+  text: 'היי ראמי ❤️ אני כאן ומחוברת לשני הסניפים (סניף 4 החרש וסניף 1 התלמיד), לשני הגיליונות, לחכמת ולעלי. על מה נעבוד עכשיו?',
+  actionCard: {
+    type: 'sheet_control',
+    data: {
+      title: 'סנכרון פעיל מול גיליונות Google Sheets',
+      totalOrders: SABAN_ORDERS.length,
+      activeOrders: SABAN_ORDERS.filter((o) => !o.status.includes('סופק')).length,
+      deliveredOrders: SABAN_ORDERS.filter((o) => o.status.includes('סופק')).length,
+      tabs: ['הזמנות_סידור', 'הצלבה_ובקרה', 'דשבורד סידור נהגים'],
+    },
+  },
 };
 
 export default function App() {
@@ -150,6 +145,68 @@ export default function App() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
   const [isMemoryModalOpen, setIsMemoryModalOpen] = useState(false);
+  const [isSheetsModalOpen, setIsSheetsModalOpen] = useState(false);
+
+  // Dynamic live orders state with LocalStorage persistence & server sync
+  const [orders, setOrders] = useState<SabanOrder[]>(() => {
+    try {
+      const saved = localStorage.getItem('saban_active_orders_json');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse active orders:', e);
+    }
+    return SABAN_ORDERS;
+  });
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('saban_active_orders_json', JSON.stringify(orders));
+    } catch (e) {
+      console.warn('Could not save active orders:', e);
+    }
+  }, [orders]);
+
+  const handleUpdateOrderStatus = (orderNumber: string, newStatus: string) => {
+    setOrders((prev) =>
+      prev.map((o) =>
+        o.orderNumber === orderNumber
+          ? {
+              ...o,
+              status: newStatus,
+              hasDeliveryNote: newStatus.includes('סופק') ? '✅ כן (נחתם)' : o.hasDeliveryNote,
+            }
+          : o
+      )
+    );
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'update_status', orderNumber, newStatus }),
+    }).catch(() => {});
+  };
+
+  const handleReassignDriver = (orderNumber: string, newDriver: string) => {
+    setOrders((prev) =>
+      prev.map((o) => (o.orderNumber === orderNumber ? { ...o, driver: newDriver } : o))
+    );
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'reassign_driver', orderNumber, newDriver }),
+    }).catch(() => {});
+  };
+
+  const handleAddNewOrder = (newOrder: SabanOrder) => {
+    setOrders((prev) => [newOrder, ...prev]);
+    fetch('/api/orders', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ action: 'add_order', order: newOrder }),
+    }).catch(() => {});
+  };
 
   const [memories, setMemories] = useState<OperationalMemoryItem[]>(() => {
     try {
@@ -351,6 +408,19 @@ export default function App() {
       }
     }
 
+    // 1. Process command through logic & sheet engine
+    const engineOutcome = processLogicAndSheetCommand(text, orders, memories);
+
+    // Apply any detected sheet mutation immediately
+    if (engineOutcome.mutatedOrders) {
+      setOrders(engineOutcome.mutatedOrders);
+      fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'sync_all', orders: engineOutcome.mutatedOrders }),
+      }).catch(() => {});
+    }
+
     const time = new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -364,11 +434,10 @@ export default function App() {
     setInputVal('');
     setIsTyping(true);
 
-    // 1. Check if user configured custom Google Apps Script Web App URL
+    // Check if user configured custom Google Apps Script Web App URL
     const customApiUrl = localStorage.getItem('saban_api_url') || '';
-
-    let replyHtml = '';
-    let usedOfflineFallback = false;
+    let replyText = '';
+    let actionCard = engineOutcome.actionCard;
 
     // Build context history payload (last 8 messages)
     const historyPayload = messages.slice(-8).map((m) => ({
@@ -377,7 +446,7 @@ export default function App() {
     }));
 
     try {
-      // Primary route: Send to /api/chat using fetchWithRetry with automatic retry on 500 / server errors
+      // Primary route: Send to /api/chat with live activeOrders
       const res = await fetchWithRetry(
         '/api/chat',
         {
@@ -389,6 +458,7 @@ export default function App() {
             googleScriptUrl: customApiUrl || undefined,
             history: historyPayload,
             operationalMemory: memories,
+            activeOrders: orders,
           }),
         },
         2, // up to 2 retries
@@ -403,7 +473,7 @@ export default function App() {
 
       if (res.ok) {
         const data = await res.json();
-        replyHtml = data.htmlMessage || data.message || '';
+        replyText = data.message || data.htmlMessage || '';
         setServerAvailability('online');
         if (data.activeKeyIndex) {
           setAiInfo((prev) => ({
@@ -414,18 +484,16 @@ export default function App() {
           }));
         }
       } else {
-        // If server responded with error status (e.g. 500) even after retries
         setServerAvailability('degraded');
       }
     } catch {
-      // Server not reachable or network failed after retries - handled gracefully
       setServerAvailability('offline');
     } finally {
       setRetryStatus(null);
     }
 
-    // 2. Direct client fallback with CORS-safelisted content-type (no preflight OPTIONS)
-    if (!replyHtml && customApiUrl && customApiUrl.startsWith('http')) {
+    // Direct client fallback if custom URL is configured
+    if (!replyText && customApiUrl && customApiUrl.startsWith('http')) {
       try {
         const directRes = await fetch(customApiUrl, {
           method: 'POST',
@@ -435,31 +503,16 @@ export default function App() {
         });
         if (directRes.ok) {
           const data = await directRes.json();
-          replyHtml = data.htmlMessage || data.message || '';
+          replyText = data.message || data.htmlMessage || '';
         }
       } catch {
-        // Continue to local Saban engine quietly
+        // Continue to local logic engine
       }
     }
 
-    // 3. Fallback to rich local Saban heuristic engine with a friendly, professional banner
-    if (!replyHtml) {
-      usedOfflineFallback = true;
-      const localReply = generateLocalSabanReply(text, currentHistory, memories);
-      replyHtml = `
-        <div class="space-y-2.5">
-          <div class="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs font-bold">
-            <span class="text-base">⚡</span>
-            <div>
-              <div class="font-black text-amber-950">מצב סדרנות מקומי (Offline Protection)</div>
-              <div class="text-[11px] font-semibold text-amber-800">
-                שרת הענן בעיבוד עמוס או לא זמין כרגע. הפקודה פוענחה בהצלחה ישירות ממאגר הנתונים המקומי של ח. סבן!
-              </div>
-            </div>
-          </div>
-          ${localReply}
-        </div>
-      `;
+    // Fallback to local logic & sheet engine response
+    if (!replyText) {
+      replyText = engineOutcome.replyText;
     }
 
     setIsTyping(false);
@@ -467,9 +520,10 @@ export default function App() {
     const noaMsg: ChatMessage = {
       id: `noa-${Date.now()}`,
       sender: 'noa',
-      text: replyHtml.replace(/<[^>]+>/g, ' '),
-      htmlContent: replyHtml,
+      text: replyText.replace(/<[^>]+>/g, ' ').trim() || engineOutcome.replyText,
+      htmlContent: replyText.includes('<div') || replyText.includes('<span') ? replyText : undefined,
       timestamp: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
+      actionCard,
     };
 
     setMessages((prev) => [...prev, noaMsg]);
@@ -510,6 +564,14 @@ export default function App() {
   };
 
   const generateLocalSabanReply = (
+    query: string,
+    history: ChatMessage[],
+    operationalMemories: OperationalMemoryItem[]
+  ): string => {
+    return processLogicAndSheetCommand(query, orders, operationalMemories).replyText;
+  };
+
+  const _unusedLegacyReply = (
     query: string,
     history: ChatMessage[],
     operationalMemories: OperationalMemoryItem[]
@@ -1039,6 +1101,20 @@ export default function App() {
             </span>
           </button>
 
+          {/* Google Sheets Controller Button */}
+          <button
+            id="sheets-manager-btn"
+            onClick={() => setIsSheetsModalOpen(true)}
+            title="שליטה וסנכרון מלא בגיליונות Google Sheets"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-900 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer"
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-700" />
+            <span className="hidden sm:inline">גיליונות</span>
+            <span className="bg-emerald-200 text-emerald-950 px-1.5 py-0.2 rounded-full text-[10px] font-black">
+              {orders.filter((o) => !o.status.includes('סופק')).length}
+            </span>
+          </button>
+
           {/* Professional Tools Drawer */}
           <button
             id="tools-drawer-btn"
@@ -1122,15 +1198,21 @@ export default function App() {
                     </div>
                   )}
 
-                  {/* Render Embedded Interactive Chart Card if present */}
-                  {m.actionCard?.type === 'chart_analysis' && (
+                  {/* Render Embedded Interactive Action Cards */}
+                  {m.actionCard?.type === 'chart_analysis' ? (
                     <div className="mt-3 pt-3 border-t border-slate-200">
                       <WarehouseOrdersChart
                         className="p-3 bg-slate-50/60 border-sky-200"
                         onSelectPrompt={(prompt) => handleSendQuery(prompt)}
                       />
                     </div>
-                  )}
+                  ) : m.actionCard ? (
+                    <InteractiveActionCard
+                      card={m.actionCard}
+                      onOpenSheetsModal={() => setIsSheetsModalOpen(true)}
+                      onUpdateOrderStatus={handleUpdateOrderStatus}
+                    />
+                  ) : null}
                 </div>
               </div>
             );
@@ -1264,7 +1346,7 @@ export default function App() {
               </button>
             </div>
             <div className="flex-1 overflow-y-auto space-y-2 pr-1">
-              {SABAN_ORDERS.map((ord) => (
+              {orders.map((ord) => (
                 <div
                   key={ord.id}
                   onClick={() => {
@@ -1303,6 +1385,20 @@ export default function App() {
         onAddMemory={handleAddMemory}
         onDeleteMemory={handleDeleteMemory}
         onResetDefaults={handleResetMemories}
+      />
+
+      {/* Google Sheets Controller Modal */}
+      <GoogleSheetsManagerModal
+        isOpen={isSheetsModalOpen}
+        onClose={() => setIsSheetsModalOpen(false)}
+        orders={orders}
+        onUpdateOrderStatus={handleUpdateOrderStatus}
+        onReassignDriver={handleReassignDriver}
+        onAddNewOrder={handleAddNewOrder}
+        onSelectPrompt={(promptText) => {
+          setIsSheetsModalOpen(false);
+          handleSendQuery(promptText);
+        }}
       />
     </div>
   );
