@@ -119,9 +119,9 @@ export const WarehouseOrdersChart: React.FC<WarehouseChartProps> = ({
     if (onShareToChat) {
       onShareToChat({
         title: '📊 ניתוח גרף שבועי — סניף 4 החרש מול סניף 1 התלמיד',
-        summary: `סה״כ שבועי: ${totalOrders} הזמנות. סניף 4 החרש מוביל עם ${totalHarash} הזמנות (${harashPercentage}%), וסניף 1 התלמיד עם ${totalTalmid} הזמנות (${talmidPercentage}%).`,
-        statsText: `יום השיא היה יום ב' (24 הזמנות), מתוכן 15 פריקות מנוף ובלות בסניף 4 החרש.`,
-        actionPrompt: '📊 נתח את עומסי ההזמנות השבוע בין סניף 4 החרש לסניף 1 התלמיד והמלץ על תגבור נהגים'
+        summary: `סה״כ שבועי: ${totalOrders} הזמנות. סניף 4 החרש מוביל עם ${totalHarash} הזמנות (${harashPercentage}%), וסניף 1 התלמיד עם ${totalTalmid} הזמנות (${talmidPercentage}%). יום השיא: יום ב׳ (${chartData[1].total} הזמנות).`,
+        statsText: `חכמת (מרצדס מנוף) מספק את עיקר המשקל בסניף 4 (בלות ומשטחים), בעוד עלי (איסוזו) מתמקד בגבס, פרופילים וצבעים מסניף 1.`,
+        actionPrompt: '📊 נתח את יחסי העומס השבועי בין סניף 4 החרש לסניף 1 התלמיד והמלץ על תגבור'
       });
     }
   };
@@ -151,17 +151,18 @@ export const WarehouseOrdersChart: React.FC<WarehouseChartProps> = ({
         {onShareToChat && (
           <button
             type="button"
+            id="share-chart-to-chat-btn"
             onClick={handleShare}
-            title="העתק ושתף גרף זה לתוך הצ'אט הראשי של נועה"
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-extrabold transition-all shadow-xs active:scale-95 cursor-pointer ${
+            title="שתף גרף זה ישירות לתוך הצ'אט הראשי של נועה"
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-black transition-all shadow-xs active:scale-95 cursor-pointer ${
               copiedSuccess
-                ? 'bg-emerald-600 text-white shadow-emerald-200'
-                : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-200 hover:shadow-sm'
+                ? 'bg-emerald-600 text-white shadow-emerald-200 ring-2 ring-emerald-300'
+                : 'bg-sky-600 hover:bg-sky-700 text-white shadow-sky-200 hover:shadow-md ring-2 ring-sky-400/20'
             }`}
           >
             {copiedSuccess ? (
               <>
-                <Check className="w-3.5 h-3.5" />
+                <Check className="w-3.5 h-3.5 animate-scale-in" />
                 <span>הועתק לצ'אט!</span>
               </>
             ) : (
