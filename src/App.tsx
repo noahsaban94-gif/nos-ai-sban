@@ -11,7 +11,10 @@ import {
   Package,
   Navigation,
   FileSpreadsheet,
-  X
+  X,
+  RefreshCw,
+  ServerOff,
+  Sparkles
 } from 'lucide-react';
 import { ChatMessage } from './types';
 import { SABAN_ORDERS } from './data/sabanData';
@@ -23,6 +26,40 @@ import { OfflineIndicator } from './components/OfflineIndicator';
 import { WarehouseOrdersChart } from './components/WarehouseOrdersChart';
 
 const AVATAR_URL = 'https://i.ibb.co/GQfHTYZH/Gemini-Generated-Image-7.png';
+
+/**
+ * פונקציית עזר עם מנגנון Retry אוטומטי במקרה של שגיאת 500 או שגיאת רשת
+ */
+async function fetchWithRetry(
+  url: string,
+  options: RequestInit,
+  retries: number = 2,
+  delayMs: number = 1000,
+  onRetryAttempt?: (attempt: number, max: number) => void
+): Promise<Response> {
+  let lastError: any = null;
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    try {
+      if (attempt > 0 && onRetryAttempt) {
+        onRetryAttempt(attempt, retries);
+      }
+      const response = await fetch(url, options);
+      // אם התקבלה שגיאת 500 (Internal Server Error) או 502/503/504
+      if (response.status >= 500 && attempt < retries) {
+        await new Promise((res) => setTimeout(res, delayMs * Math.pow(1.5, attempt)));
+        continue;
+      }
+      return response;
+    } catch (err) {
+      lastError = err;
+      if (attempt < retries) {
+        await new Promise((res) => setTimeout(res, delayMs * Math.pow(1.5, attempt)));
+      }
+    }
+  }
+  if (lastError) throw lastError;
+  throw new Error('All retries failed');
+}
 
 const INITIAL_NOA_MESSAGE: ChatMessage = {
   id: 'init-1',
@@ -65,6 +102,8 @@ export default function App() {
 
   const [inputVal, setInputVal] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [retryStatus, setRetryStatus] = useState<{ active: boolean; text: string } | null>(null);
+  const [serverAvailability, setServerAvailability] = useState<'online' | 'degraded' | 'offline'>('online');
   const [soundEnabled, setSoundEnabled] = useState<boolean>(() => {
     return localStorage.getItem('sound_enabled') !== 'false';
   });
@@ -177,24 +216,35 @@ export default function App() {
     const customApiUrl = localStorage.getItem('saban_api_url') || '';
 
     let replyHtml = '';
+    let usedOfflineFallback = false;
 
     try {
-      // Primary route: Send to /api/chat with googleScriptUrl included.
-      // The backend proxies googleScriptUrl safely with ZERO browser CORS issues,
-      // and leverages the 3 Gemini keys in auto-rotation!
-      const res = await fetch('/api/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          query: text,
-          sender: 'ראמי',
-          googleScriptUrl: customApiUrl || undefined,
-        }),
-      });
+      // Primary route: Send to /api/chat using fetchWithRetry with automatic retry on 500 / server errors
+      const res = await fetchWithRetry(
+        '/api/chat',
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            query: text,
+            sender: 'ראמי',
+            googleScriptUrl: customApiUrl || undefined,
+          }),
+        },
+        2, // up to 2 retries
+        1000,
+        (attempt, max) => {
+          setRetryStatus({
+            active: true,
+            text: `מתבצע ניסיון חיבור חוזר (${attempt}/${max}) עקב עומס רגעי...`,
+          });
+        }
+      );
 
       if (res.ok) {
         const data = await res.json();
         replyHtml = data.htmlMessage || data.message || '';
+        setServerAvailability('online');
         if (data.activeKeyIndex) {
           setAiInfo((prev) => ({
             ...prev,
@@ -203,9 +253,15 @@ export default function App() {
             model: data.model || prev.model,
           }));
         }
+      } else {
+        // If server responded with error status (e.g. 500) even after retries
+        setServerAvailability('degraded');
       }
     } catch {
-      // Backend not reachable, will try direct fallback below
+      // Server not reachable or network failed after retries - handled gracefully
+      setServerAvailability('offline');
+    } finally {
+      setRetryStatus(null);
     }
 
     // 2. Direct client fallback with CORS-safelisted content-type (no preflight OPTIONS)
@@ -226,9 +282,24 @@ export default function App() {
       }
     }
 
-    // 3. Fallback to rich local Saban heuristic engine if needed
+    // 3. Fallback to rich local Saban heuristic engine with a friendly, professional banner
     if (!replyHtml) {
-      replyHtml = generateLocalSabanReply(text);
+      usedOfflineFallback = true;
+      const localReply = generateLocalSabanReply(text);
+      replyHtml = `
+        <div class="space-y-2.5">
+          <div class="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs font-bold">
+            <span class="text-base">⚡</span>
+            <div>
+              <div class="font-black text-amber-950">מצב סדרנות מקומי (Offline Protection)</div>
+              <div class="text-[11px] font-semibold text-amber-800">
+                שרת הענן בעיבוד עמוס או לא זמין כרגע. הפקודה פוענחה בהצלחה ישירות ממאגר הנתונים המקומי של ח. סבן!
+              </div>
+            </div>
+          </div>
+          ${localReply}
+        </div>
+      `;
     }
 
     setIsTyping(false);
@@ -528,11 +599,20 @@ export default function App() {
                 className="text-[11px] font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1 transition cursor-pointer"
                 title="לחץ לפתיחת הגדרות ובדיקת מפתחות Gemini"
               >
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span className={`w-1.5 h-1.5 rounded-full ${serverAvailability === 'online' ? 'bg-emerald-500 animate-pulse' : serverAvailability === 'degraded' ? 'bg-amber-500' : 'bg-slate-400'}`}></span>
                 <span>
                   Gemini Flash • {aiInfo.activeKeyIndex ? `מפתח #${aiInfo.activeKeyIndex}` : `${aiInfo.totalKeys || 3} מפתחות ברוטציה`}
                 </span>
               </button>
+              {serverAvailability !== 'online' && (
+                <span
+                  title="שרת הענן מוגן במצב אופליין מקומי"
+                  className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-300 flex items-center gap-1"
+                >
+                  <ServerOff className="w-3 h-3 text-amber-700" />
+                  <span>מעקף מקומי פעיל</span>
+                </span>
+              )}
               <span className="text-slate-400 text-xs hidden sm:inline">•</span>
               <span className="text-[12px] font-medium text-slate-500 hidden sm:inline">יד ימינו של ראמי</span>
             </div>
@@ -664,8 +744,26 @@ export default function App() {
             );
           })}
 
+          {/* Retry notification or typing indicator */}
+          {retryStatus && retryStatus.active && (
+            <div id="retry-indicator" className="flex items-start gap-3 max-w-xl animate-fade-in">
+              <div className="w-10 h-10 rounded-full bg-amber-500/20 ring-2 ring-amber-500 flex items-center justify-center flex-shrink-0 mt-0.5">
+                <RefreshCw className="w-5 h-5 text-amber-600 animate-spin" />
+              </div>
+              <div className="bubble-noa px-4 py-3 border border-amber-200 bg-amber-50/80 text-amber-900 rounded-2xl shadow-xs space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-amber-500 animate-ping"></span>
+                  <span className="text-xs font-black">רענון תקשורת אוטומטי (Auto-Retry)</span>
+                </div>
+                <div className="text-[11px] font-semibold text-amber-800">
+                  {retryStatus.text}
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Typing Indicator */}
-          {isTyping && (
+          {isTyping && !retryStatus && (
             <div id="typing-indicator" className="flex items-start gap-3 max-w-xl animate-fade-in">
               <img
                 src={AVATAR_URL}
