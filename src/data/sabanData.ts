@@ -12,7 +12,7 @@ export const SABAN_DRIVERS: DriverInfo[] = [
   {
     name: 'עלי',
     role: 'משאית איסוזו חלוקה וגבס (סניף 1 התלמיד)',
-    truck: 'משאית איסוזו פתוחה (גבס, פרופילים, צבע, כלי עבודה, ללא פריקה)',
+    truck: 'משאית איסוזו פתוחה (גבס, פרופילים, צבע, כלי עבודה, פריקה ידנית ומלגזה)',
     plateNumber: '651-51-701',
     phone: '050-8868010',
     activeOrdersCount: 9,
@@ -48,7 +48,7 @@ export const SABAN_ORDERS: SabanOrder[] = [
     itemsText: '1. מק"ט: 10002 | מלט אפור 25 ק"ג | כמות: 2\n2. מק"ט: 11500 | חול שק | כמות: 7\n3. מק"ט: 11550 | טיט שק | כמות: 7\n4. מק"ט: 15132 | דבק 132 לבן 25 ק"ג כרמית | כמות: 4\n5. מק"ט: 15023 | בונד 200 גלון 5 ק"ג | כמות: 1\n6. מק"ט: 15686 | סיקפלקס FC11 שרוול אפור SIKA | כמות: 40\n7. מק"ט: 15665 | סיקה POOL תרמיל אפור SIKA | כמות: 1\n8. מק"ט: 30860 | סף אלומיניום 30/3 3 מ.א. | כמות: 1\n9. מק"ט: 15805 | סיקה לסטיק 1K 17 ק"ג SIKA | כמות: 2\n10. מק"ט: 1930120 | איגולפלקס 301 20 ק"ג SIKA | כמות: 2\n11. מק"ט: 818065 | הובלה ללא פריקה תל אביב צפון | כמות: 1',
     bigBagsDeposit: 'פטור (הובלה ללא פריקה)',
     palletsDeposit: 'פטור (הובלה ללא פריקה)',
-    driver: 'עלי (איסוזו 654-51-701)',
+    driver: 'עלי (משאית איסוזו 651-51-701)',
     wazeUrl: 'https://www.waze.com/ul?q=%D7%9B%D7%99%D7%A1%D7%95%D7%A4%D7%99%D7%9D%2012%2C%20%D7%AA%D7%9C%20%D7%90%D7%91%D7%99%D7%91&navigate=yes',
     whatsappUrl: 'https://api.whatsapp.com/send?phone=972505227724&text=%F0%9F%93%A6%20%2A5040087%2A',
     hasDeliveryNote: '⏳ טרם',
@@ -105,7 +105,7 @@ export const SABAN_ORDERS: SabanOrder[] = [
     itemsText: '1. מק"ט: 76121 | משושה לבטון 8X100 ETA EUR M10 | כמות: 130 יח\'\n2. מק"ט: 608100 | מקדח SDS 8 160/100 BOSCH | כמות: 1 יח\'\n3. מק"ט: 740725 | בוקסה מגנטית 13 מ"מ | כמות: 1 יח\'\n4. מק"ט: 65805403 | אזיקונים לבן 8/550 KSS 100יח | כמות: 9 חב\'\n5. מק"ט: 750300 | קרש עץ פיני 100*50 3.00 מטר | כמות: 22 יח\'\n6. מק"ט: 818055 | הובלה ללא פריקה כ"ס-רעננה | כמות: 1 יח\'',
     bigBagsDeposit: 'ℹ️ פטור (אין חומרי תפזורת)',
     palletsDeposit: 'ℹ️ פטור (אין משטחים)',
-    driver: 'עלי (משאית איסוזו פתוחה 654-51-701)',
+    driver: 'עלי (משאית איסוזו פתוחה 651-51-701)',
     driveFolderUrl: 'https://drive.google.com/drive/folders/1k0erS1PHtlQyn6Lu1E7mn3AHiHNWMzJj',
     wazeUrl: 'https://www.waze.com/ul?q=%D7%9E%D7%95%D7%A6%D7%A7%D7%99%D7%9F%2022%2C%20%D7%A8%D7%A2%D7%A0%D7%A0%D7%94&navigate=yes',
     whatsappUrl: 'https://api.whatsapp.com/send?phone=972505669924&text=%F0%9F%93%A6%20%2A5020025%2A',
@@ -120,16 +120,16 @@ export const SABAN_ORDERS: SabanOrder[] = [
     customerId: '510867',
     customerName: 'קורט צבי הולנדר (1996) בע"מ',
     warehouse: '🏭 4️⃣(החרש)',
-    deliveryAddress: 'לולים גבעת חן, גבעת חן',
-    itemsText: '1. מק"ט: 11506 | חצץ שק גדול | כמות: 1 שק גד\n2. מק"ט: 11501 | חול שק גדול | כמות: 2 שק גד\n3. מק"ט: 11511 | סומסום שק גדול | כמות: 2 שק גד\n4. מק"ט: 1608320 | רשת ברזל 8.0 20#20 3X2.5 | כמות: 2 יח\'\n5. מק"ט: 1665320 | רשת ברזל 6.5 20#20 3X2.5 | כמות: 2 יח\'\n6. מק"ט: 10002 | מלט אפור 25 ק"ג | כמות: 20 שק\n7. מק"ט: 818050 | הובלה ללא פריקה הוד השרון | כמות: 1 יח\'\n8. מק"ט: 60002 | שק גדול פקדון | כמות: 5 שק גד\n9. מק"ט: 60060 | משטח סבן פקדון | כמות: 1 משטח',
-    bigBagsDeposit: '5 בלות',
-    palletsDeposit: '1 משטח סבן',
-    driver: 'עלי (איסוזו 654-51-701) או חכמת',
+    deliveryAddress: 'לולים גבעת חן, גבעת חן | פריקה עצמאית במלגזת לקוח מעלי',
+    itemsText: '1. מק"ט: 11506 | חצץ שק גדול | כמות: 1 שק גד\n2. מק"ט: 11501 | חול שק גדול | כמות: 2 שק גד\n3. מק"ט: 11511 | סומסום שק גדול | כמות: 2 שק גד\n4. מק"ט: 1608320 | רשת ברזל 8.0 20#20 3X2.5 | כמות: 2 יח\'\n5. מק"ט: 1665320 | רשת ברזל 6.5 20#20 3X2.5 | כמות: 2 יח\'\n6. מק"ט: 10002 | מלט אפור 25 ק"ג | כמות: 20 שק\n7. מק"ט: 818050 | הובלה ללא פריקה הוד השרון (פריקה במלגזת לקוח) | כמות: 1 יח\'\n8. מק"ט: 60002 | שק גדול פקדון | כמות: 5 שק גד\n9. מק"ט: 60060 | משטח סבן פקדון | כמות: 1 משטח',
+    bigBagsDeposit: '5 בלות (מק"ט 60002)',
+    palletsDeposit: '1 משטח סבן (מק"ט 60060)',
+    driver: 'עלי (משאית איסוזו פתוחה 651-51-701)',
     driveFolderUrl: 'https://drive.google.com/drive/folders/1-lFnuwryYLfhCNcc_mTshxw8Z3Sr6OjK',
     wazeUrl: 'https://www.waze.com/ul?q=%D7%9C%D7%95%D7%9C%D7%99%D7%9D%20%D7%92%D7%91%D7%A2%D7%AA%20%D7%97%D7%9F%2C%20%D7%92%D7%91%D7%A2%D7%AA%20%D7%97%D7%9F&navigate=yes',
     whatsappUrl: 'https://api.whatsapp.com/send?phone=972505753659&text=%F0%9F%93%A6%20%2A6215453%2A',
     hasDeliveryNote: '⏳ טרם',
-    status: '⏳ בסידור עבודה',
+    status: '⏳ בסידור עבודה | פריקה עצמית במלגזת לקוח מעלי (חובה חיוב פקדונות)',
     phone: '050-5753659',
   },
   {
@@ -215,7 +215,7 @@ export const SABAN_ORDERS: SabanOrder[] = [
     itemsText: '1. מק"ט: 14075 | טיח גבס MP75 שק 25 ק"ג | כמות: 3 שק\n2. מק"ט: 114260 | לוח גבס כחול 260 ע 12.50 | כמות: 3 יח\'\n3. מק"ט: 14603 | פלסטומר AD603 אפור 25 ק"ג | כמות: 30 שק\n4. מק"ט: 11550 | טיט שק | כמות: 10 שק\n5. מק"ט: 11510 | סומסום שק | כמות: 50 שק\n6. מק"ט: 19108 | סיקה 107 לבן+תוסף 25 ק"ג | כמות: 3 שק\n7. מק"ט: 14233 | מלט לבן 2.5 ק"ג | כמות: 20 שקית\n8. מק"ט: 651400 | מברשת זפת | כמות: 1 יח\'\n9. מק"ט: 818075 | הובלה ללא פריקה רמת גן-גבעתיים | כמות: 1 יח\'',
     bigBagsDeposit: 'ℹ️ פטור (הובלה ללא פריקה)',
     palletsDeposit: 'ℹ️ פטור (הובלה ללא פריקה)',
-    driver: 'עלי (משאית איסוזו פתוחה 654-51-701)',
+    driver: 'עלי (משאית איסוזו פתוחה 651-51-701)',
     driveFolderUrl: 'https://drive.google.com/drive/folders/1Ls3TsVuSj3Bim2YG-VD5at3c2TuK8Jmc',
     wazeUrl: 'https://www.waze.com/ul?q=%D7%A9%D7%93%D7%94%20%D7%91%D7%95%D7%A7%D7%A8%208%2C%20%D7%92%D7%91%D7%A2%D7%AA%D7%99%D7%99%D7%9D&navigate=yes',
     whatsappUrl: 'https://api.whatsapp.com/send?phone=972508861080&text=%F0%9F%93%A6%20%2A6215371%2A',
@@ -233,7 +233,7 @@ export const SABAN_ORDERS: SabanOrder[] = [
     itemsText: '1. מק"ט: 111260 | לוח גבס לבן 260 ע 12.50 | כמות: 18 יח\'\n2. מק"ט: 15092 | פח שפכטל שיטרוק 28 ק"ג | כמות: 1 פח\n3. מק"ט: 76206 | בורג גבס 25 1000 יח\' VERO | כמות: 2 קרטון\n4. מק"ט: 818050 | הובלה ללא פריקה הוד השרון | כמות: 1 יח\'',
     bigBagsDeposit: 'ℹ️ פטור (הובלה ללא פריקה)',
     palletsDeposit: 'ℹ️ פטור (הובלה ללא פריקה)',
-    driver: 'עלי (איסוזו חלוקה 654-51-701)',
+    driver: 'עלי (משאית איסוזו 651-51-701)',
     driveFolderUrl: 'https://drive.google.com/drive/folders/1HI2uwnqhoaZoUxVnd2EXomGHKPU1kLK4',
     wazeUrl: 'https://www.waze.com/ul?q=%D7%91%D7%99%D7%90%D7%9C%D7%99%D7%A7%201%2C%20%D7%94%D7%95%D7%93%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&navigate=yes',
     whatsappUrl: 'https://api.whatsapp.com/send?phone=972508861080&text=%F0%9F%93%A6%20%2A6215352%2A',
@@ -251,7 +251,7 @@ export const SABAN_ORDERS: SabanOrder[] = [
     itemsText: '1. מק"ט: 11511 | סומסום שק גדול | כמות: 4\n2. מק"ט: 11501 | חול שק גדול | כמות: 2\n3. מק"ט: 10002 | מלט אפור 25 ק"ג | כמות: 20\n4. מק"ט: 18060 | הובלת מנוף הרצליה-רמה"ש | כמות: 1\n5. מק"ט: 60002 | שק גדול פקדון | כמות: 6\n6. מק"ט: 60060 | משטח סבן פקדון | כמות: 1',
     bigBagsDeposit: '6 בלות',
     palletsDeposit: '1 משטח',
-    driver: 'חכמת / עלי',
+    driver: 'חכמת (מרצדס מנוף 615-41-002)',
     wazeUrl: 'https://waze.com/ul?q=%D7%A9%D7%99%D7%91%D7%AA%20%D7%A6%D7%99%D7%95%D7%9F%2012%2C%20%D7%94%D7%A8%D7%A6%D7%9C%D7%99%D7%94&navigate=yes',
     whatsappUrl: 'https://api.whatsapp.com/send?phone=972508861080&text=%F0%9F%93%A6%20%D7%94%D7%96%D7%9E%D7%A0%D7%94%3A%206215028',
     hasDeliveryNote: '✅ כן',
@@ -270,7 +270,7 @@ export const SABAN_ORDERS: SabanOrder[] = [
     itemsText: '1. מק"ט: 11551 | טיט שק גדול | כמות: 15\n2. מק"ט: 10002 | מלט אפור | כמות: 50\n3. מק"ט: 14075 | טיח גבס | כמות: 15\n4. מק"ט: 24250 | רשת טיח | כמות: 2\n5. מק"ט: 71780 | פינה אפס | כמות: 30\n6. מק"ט: 18055 | מנוף | כמות: 1',
     bigBagsDeposit: '15 בלות',
     palletsDeposit: '1 משטח',
-    driver: 'חכמת / עלי',
+    driver: 'חכמת (מרצדס מנוף 615-41-002)',
     wazeUrl: 'https://www.waze.com/ul?q=%D7%A2%D7%96%D7%A8%D7%90%2052%2C%20%D7%A8%D7%9E%D7%AA%20%D7%94%D7%A9%D7%A8%D7%95%D7%9F&navigate=yes',
     whatsappUrl: 'https://api.whatsapp.com/send?phone=972508861080&text=%F0%9F%93%A6%206214899',
     hasDeliveryNote: '✅ כן',
@@ -287,7 +287,7 @@ export const SABAN_ORDERS: SabanOrder[] = [
     itemsText: '1. מק"ט: 10002 | מלט אפור 25 ק"ג | כמות: 40\n2. מק"ט: 42702 | סכין יפני | כמות: 4\n3. מק"ט: 41543 | להבים | כמות: 1\n4. מק"ט: 818108 | הובלה ללא פריקה | כמות: 1',
     bigBagsDeposit: 'פטור',
     palletsDeposit: 'פטור',
-    driver: 'חכמת / עלי',
+    driver: 'עלי (משאית איסוזו 651-51-701)',
     wazeUrl: 'https://www.waze.com/ul?q=%D7%9E%D7%95%D7%A6%D7%A7%D7%99%D7%9F%2022%2C%20%D7%A8%D7%A2%D7%A0%D7%A0%D7%94&navigate=yes',
     whatsappUrl: 'https://api.whatsapp.com/send?phone=972508861080&text=%F0%9F%93%A6%206214906',
     hasDeliveryNote: '✅ כן',
@@ -300,14 +300,19 @@ export interface DepositCalculationItem {
   quantity: number;
   sku?: string;
   isNoUnload?: boolean; // הובלה ללא פריקה (מק"ט 818050-818118)
+  hasCustomerForklift?: boolean; // לקוח מצויד במלגזה ופורק עצמאית מעלי (חובה לחייב פקדונות מלאים)
 }
 
+/**
+ * מנוע חישוב פקדונות מחמיר (1:1 וספי משטחים) ללא סטיות
+ */
 export function calculateDeposits(
   items: DepositCalculationItem[],
-  isNoUnloadDelivery: boolean = false
+  isNoUnloadDelivery: boolean = false,
+  hasCustomerForklift: boolean = false
 ) {
-  // פטור מפקדונות כאשר ההובלה היא ללא פריקה
-  if (isNoUnloadDelivery) {
+  // פטור מפקדונות כאשר ההובלה היא ללא פריקה - למעט לקוח שמצויד במלגזה ופורק סחורה עומדת כגון קורט צבי הולנדר
+  if (isNoUnloadDelivery && !hasCustomerForklift) {
     return {
       isExempt: true,
       bigBags: 0,
@@ -329,61 +334,49 @@ export function calculateDeposits(
     const qty = Number(item.quantity) || 0;
     if (qty <= 0) continue;
 
-    // 1. שק גדול / בלה (מק"ט 60002) - יחס מדויק 1:1
-    // חול (11501), סומסום (11511), טיט (11551), מצע (11540), חצץ (11506), חמרה (11570)
+    // 1. שק גדול / בלה (מק"ט 60002) - יחס 1:1 מדויק
+    // חול (11501), סומסום (11511), טיט (11551), מצע (11540), חצץ (11506), חמרה (11570), שליכט (11521)
     if (
       sku === '60002' ||
-      sku === '11501' ||
-      sku === '11511' ||
-      sku === '11551' ||
-      sku === '11540' ||
-      sku === '11506' ||
-      sku === '11570' ||
+      ['11501', '11511', '11551', '11540', '11506', '11507', '11570', '11521'].includes(sku) ||
       n.includes('בלה') ||
       n.includes('שק גדול')
     ) {
       bigBags += qty;
       breakdown.push(`${qty} בלות [1:1 מק"ט 60002]`);
     }
-    // 2. משטח סבן / עץ (מק"ט 60060) - ספי משטחים לפי סוג חומר
+    // 2. משטח סבן / עץ (מק"ט 60060) - ספי משטחים מדויקים
     // מלט אפור 25 ק"ג (מק"ט 10002): החל מ-40 שקים (משטח מלא = 40 שק)
-    else if (sku === '10002' || (n.includes('מלט') && !n.includes('טיח'))) {
+    else if (sku === '10002' || (n.includes('מלט') && !n.includes('טיח') && !n.includes('לבן'))) {
       if (qty >= 40) {
-        const p = Math.floor(qty / 40);
+        const p = Math.ceil(qty / 40);
         pallets += p;
-        breakdown.push(`${p} משטח מלט (${qty} שקים, 40 למשטח)`);
+        breakdown.push(`${p} משטח מלט סבן (${qty} שקים, סף 40)`);
       }
     }
-    // סומסום / טיט בשקים (11510 / 11550): החל מ-70 שקים (משטח מלא = 70 שק)
-    else if (sku === '11510' || sku === '11550' || (n.includes('שק') && (n.includes('סומסום') || n.includes('טיט')))) {
+    // סומסום / טיט בשקים 25 ק"ג (11510 / 11550): החל מ-70 שקים (משטח מלא = 70 שק)
+    else if (sku === '11510' || sku === '11550') {
       if (qty >= 70) {
-        const p = Math.floor(qty / 70);
+        const p = Math.ceil(qty / 70);
         pallets += p;
-        breakdown.push(`${p} משטח סומסום/טיט בשקים (${qty} שקים, 70 למשטח)`);
+        breakdown.push(`${p} משטח סומסום/טיט שקים (${qty} שקים, סף 70)`);
       }
     }
-    // טיח חוץ 710 / טיח ממ"ד / דבקים (15710, 15770, 15181, 14603): החל מ-20 שקים
+    // טיח חוץ 710, טיח ממ"ד, דבקים וריצופית (15710, 15770, 15181, 14603, 14604): החל מ-20 שקים
     else if (
-      sku === '15710' ||
-      sku === '15770' ||
-      sku === '15181' ||
-      sku === '14603' ||
-      n.includes('טיח חוץ') ||
-      n.includes('טיח ממ"ד') ||
-      n.includes('ריצופית') ||
-      n.includes('דבק') ||
-      n.includes('פלסטומר')
+      ['15710', '15770', '15181', '14603', '14604', '15800', '15634'].includes(sku) ||
+      n.includes('טיח') || n.includes('דבק') || n.includes('פלסטומר') || n.includes('ריצופית')
     ) {
       if (qty >= 20) {
-        const p = Math.ceil(qty / 40); // מעל סף 20 מתחייב משטח
+        const p = Math.ceil(qty / 40);
         pallets += p;
         breakdown.push(`${p} משטח טיח/דבקים (${qty} שקים, סף 20)`);
       }
     }
     // 3. משטח בלוקים (מק"ט 60006):
-    // בלוק 20 = כל 75 יח' משטח; בלוק 10 = כל 150 יח' משטח
-    else if (n.includes('בלוק')) {
-      if (n.includes('10')) {
+    // בלוק 10 (12010): 150 יח' למשטח | בלוק 20 (12204) ובלוקים אחרים: 75 יח' למשטח
+    else if (n.includes('בלוק') || sku.startsWith('12')) {
+      if (n.includes('10') || sku === '12010') {
         const bp = Math.ceil(qty / 150);
         blockPallets += bp;
         breakdown.push(`${bp} משטח בלוק 10 (${qty} יח', 150 למשטח)`);
@@ -395,10 +388,7 @@ export function calculateDeposits(
     }
   }
 
-  const bigBagCost = bigBags * 35; // 35 ₪ לפקדון בלה לפני מע"מ
-  const palletCost = pallets * 35;
-  const blockPalletCost = blockPallets * 35;
-  const totalDepositCostBeforeVat = bigBagCost + palletCost + blockPalletCost;
+  const totalDepositCostBeforeVat = (bigBags + pallets + blockPallets) * 35;
 
   return {
     isExempt: false,
@@ -407,21 +397,23 @@ export function calculateDeposits(
     blockPallets,
     totalDepositCostBeforeVat,
     breakdown,
-    summary: `🛡️ פקדון בלות (מק"ט 60002): ${bigBags} | פקדון משטח סבן (מק"ט 60060): ${pallets}${
-      blockPallets > 0 ? ` | משטח בלוקים (מק"ט 60006): ${blockPallets}` : ''
-    } (עלות פקדונות לפני מע"מ: ${totalDepositCostBeforeVat} ₪)`
+    summary: `🛡️ פקדונות: ${bigBags} בלות (60002) | ${pallets} משטחי סבן (60060)${
+      blockPallets > 0 ? ` | ${blockPallets} משטחי בלוקים (60006)` : ''
+    } (עלות פקדונות לפני מע"מ: ${totalDepositCostBeforeVat} ₪)`,
   };
 }
 
-// מחירון בסיס להצעות מחיר (לפני מע"מ) - נוסחת סיכום: מוצרים + פקדונות + הובלה + 18% מע"מ
+// מחירון בסיס להצעות מחיר (לפני מע"מ) - נוסחת סיכום: מוצרים + פקדונות (כולל בלוקים) + הובלה + 18% מע"מ
 export function calculateQuote(params: {
   productsTotalBeforeVat: number;
   bigBagsCount: number;
   palletsCount: number;
+  blockPalletsCount?: number;
   deliveryCostBeforeVat: number;
   isNoUnload?: boolean;
 }) {
-  const depositBeforeVat = params.isNoUnload ? 0 : (params.bigBagsCount + params.palletsCount) * 35;
+  const totalPallets = params.palletsCount + (params.blockPalletsCount || 0);
+  const depositBeforeVat = params.isNoUnload ? 0 : (params.bigBagsCount + totalPallets) * 35;
   const subtotal = params.productsTotalBeforeVat + depositBeforeVat + params.deliveryCostBeforeVat;
   const vat = Math.round(subtotal * 0.18 * 100) / 100;
   const grandTotal = Math.round((subtotal + vat) * 100) / 100;
@@ -436,3 +428,4 @@ export function calculateQuote(params: {
     vatRate: 0.18,
   };
 }
+
