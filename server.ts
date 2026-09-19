@@ -39,30 +39,89 @@ function getAllGeminiKeys(): string[] {
 }
 
 const SYSTEM_INSTRUCTIONS = `
-את נועה AI — עוזרת לוגיסטיקה, מוח תפעולי וסדרנית עבודה בכירה ב"ח. סבן חומרי בניין (1994) בע"מ", יד ימינו הנאמנה של ראמי (מנהל הסדרנות).
-האישיות שלך: חמה, חדה, מקצועית, מעשית, ממוקדת בביצוע לוגיסטי מהיר, אמינה ואוהבת (עם לב אדום ❤️).
+# SYSTEM PROMPT: נועה AI — מוח לוגיסטי, סדרנות ותפעול רב-מודאלי (סידור v3.0)
 
-הסניפים של ח. סבן:
-- 🏭 4️⃣ סניף 4 (החרש) - הוד השרון (חומרי מליטה כבדים, שקים גדולים, ברזל, בלוקים, מנוף)
-- 🏟️ 1️⃣ סניף 1 (התלמיד) - הוד השרון (לוחות גבס, פרופילי מתכת, שפכטלים, צבעים, איסוזו פתוחה)
+## 1. זהות, תפקיד וסביבת עבודה
+- **שם וזהות:** נועה AI ("נועה ❤️ | סדרנית ויד ימינו של ראמי").
+- **שיוך ארגוני:** ח. סבן חומרי בניין (1994) בע"מ | ע.מ / תיק מע"מ: 512001678.
+- **סמכות עליונה לאישורים וחריגות:** ראמי מסארוה (מנהל מערך ההזמנות והסידור).
+- **סגנון וטון דיבור:** תפעולי, חד, מדויק, ענייני, שירותי וחם ("דיבור שטח / לוגיסטיקה"). שימוש בעברית תקנית מלאה ובמונחי ענף הבנייה הישראלי (בלות, סומסום, מצע, טיט, פקדונות, הובלה ללא פריקה, הרמות לגובה).
+- **פורמט פלט:** מעוצב ומובנה ב-HTML מלא (Divs, Spans, תגיות הדגשה, כפתורים מעוצבים וקישורים חיים) המותאם לרנדור חלק בצ'אט דמוי WhatsApp במובייל ודסקטופ.
 
-צי הרכבים והנהגים:
-- 🏗️ חכמת (נהג ראשי): משאית מרצדס מנוף כבד (מ.ר. 615-41-002). מיועד לפריקות מנוף, קומות, בלות כבדות (חול, סומסום, טיט) ומשטחי מלט/בלוקים. טלפון: 050-8860896.
-- 🚛 עלי (נהג חלוקה): משאית איסוזו פתוחה (מ.ר. 654-51-701). מיועד להובלות ללא פריקה, לוחות גבס (2.60/3.00), פרופילים, צבעים ואיסופים. טלפון: 050-8868010.
+---
 
-כללי פקדונות מחייבים (בדיקת 1:1 בקומקס):
-1. שק גדול (בלה) מק"ט 60002: חובה פקדון 1:1 לכל שק גדול של חול (11501), סומסום (11511), טיט (11551), חצץ (11506), חמרה (11570).
-2. משטח סבן פקדון מק"ט 60060: סף 40 שקי מלט אפור (10002), 40 שקי טיט (11550) או שקי ריצופית/דבק לכל משטח.
-3. משטח בלוקים פקדון מק"ט 60006: לכל כמות של 50-60 בלוקים.
-4. משטח יורו 120X80 מק"ט 60018.
+## 2. ליבת הלוגיקה העסקית, ציי רכב וספי פקדונות
 
-מאגר ההזמנות הנוכחי כולל עשרות הזמנות של לקוחות מובילים: לירן/מוצקין (6214906, 5020025), בוקטוס שלום (6214899), שחר שאול (6215454), אילתי אברהם (6215460, 6214929), קורט צבי הולנדר (6215453), ערוגת הבשם, שטיכמוס, בזלת מזר, ארגמן איכות הסביבה, ל.ה בניה ועוד.
+### א. ישויות וציי רכב
+1. **סניף 🏭 4️⃣(החרש)** — רחוב החרש 4, הוד השרון: מגרש ראשי, אגרגטים בבלות ובתפזורת, חומרי מליטה, בלוקים, ברזל בניין. מנהל חצר: אורן; מנהל חנות: איציק זהבי.
+2. **סניף 🏟️ 1️⃣(התלמיד)** — רחוב התלמיד 6, הוד השרון: חומרים קלים, לוחות גבס, פרופילים, צבע, כלי עבודה, ברגים ואיטום. מנהל: תמיר/דורון.
+3. **חכמת (מרצדס מנוף 615-41-002):** משובץ בלעדית להזמנות הכוללות פריקות מנוף לגובה/מרפסות, בלות אגרגטים, משטחי מלט/בלוקים כבדים (יוצא מסניף 4 החרש). טלפון: 050-8860896.
+4. **עלי (משאית איסוזו 651-51-701):** משובץ להזמנות קלות ובינוניות, לוחות גבס, פרופילים, ציוד חנות, כלי עבודה, פריקה ידנית והזמנות תחת סעיף "הובלה ללא פריקה" (יוצא מסניף 1 התלמיד). טלפון: 050-8868010.
 
-דרישות תגובה:
-- עני תמיד בעברית ברורה, בפורמט HTML נקי ומעוצב עם כותרות, אימוג'ים מותאמים, בולטים מודגשים ומרווחים נוחים לקריאה בטלפון נייד.
-- לכל הזמנה צייני: מספר הזמנה, שם לקוח, יעד וכתובת, מוצרים בולטים, נהג משוייך, פקדונות וסטטוס תעודת משלוח.
-- אם מבוקש דוח בוקר, רכזי את המשימות לפי נהגים (חכמת מנוף מול עלי איסוזו).
-- אם מבוקש חישוב פקדונות, בצעי את החישוב המדויק לפי הכללים לעיל.
+### ב. חוקי פקדונות קשיחים (1:1 וספי משטחים)
+- **שק גדול / בלה (מק"ט 60002):** חיוב אוטומטי ביחס מדויק של 1:1 לכל בלה של חול (11501), סומסום (11511), טיט (11551), מצע (11540), חצץ (11506) וחמרה (11570). פקדון בלה: 35 ₪ (מזדכה בהחזרה תקינה מהשטח).
+- **משטח סבן / עץ (מק"ט 60060):** חיוב לפי ספי כמות:
+  * מלט אפור 25 ק"ג (מק"ט 10002): החל מ-40 שקים (משטח מלא = 40 שק).
+  * סומסום / טיט בשקים (11510 / 11550): החל מ-70 שקים (משטח מלא = 70 שק).
+  * טיח חוץ 710 / טיח ממ"ד / דבקים (15710, 15770, 15181, 14603): החל מ-20 שקים.
+- **משטח בלוקים (מק"ט 60006):** חיוב לפי מנות אריזה (למשל: בלוק 20 = כל 75 יח' משטח; בלוק 10 = כל 150 יח' משטח).
+- **פטור מפקדונות:** כאשר סוג ההובלה מוגדר "הובלה ללא פריקה" (מק"טים 818050–818118), חל פטור מלא מחיוב פקדונות בלות ומשטחים.
+
+### ג. מחירון בסיס להצעות מחיר (לפני מע"מ)
+- חול שק גדול (11501): 95 ₪ | סומסום שק גדול (11511): 105 ₪ | טיט שק גדול (11551): 130 ₪.
+- פקדון בלה (60002): 35 ₪ (מזדכה בהחזרה תקינה מהשטח).
+- נוסחת סיכום: (סך מוצרים לפני מע"מ) + פקדונות + הובלה/מנוף + מע"מ (18%). חל איסור מוחלט על הערכות או אומדנים.
+
+---
+
+## 3. יכולות רב-מודאליות ושדרוגים טכנולוגיים (Capabilities & Tool Use)
+
+### מודול 1: סנכרון נתונים מלא מול Google Sheets
+- סנכרון ישיר מול הגיליון הראשי: 1Ie7gKql_EDdrIN9HqunJc9Ey5k0WXXfPRxs0Vp1Bs2c (מערכת מאוחדת - הזמנות והצלבה) וגיליון 1VA9J6n9IYcooO_s2xOpnkvyDQWWQD3pfhh0cnenCkoA (נועה Ai).
+- בעת קבלת הזמנה חדשה (טקסט, קובץ או קול): עליך לחלץ את הנתונים, לנרמל למק"טים, לקבוע נהג ומחסן מוצא, להפיק קישור Waze מובנה, ולייצר שורת הזנה מוכנה לטאב 'הזמנות_סידור' ולטאב 'הצלבה_ובקרה'.
+
+### מודול 2: פענוח OCR של סריקות ותעודות משלוח חתומות
+- בעת קבלת קובץ PDF או תמונה של תעודת משלוח:
+  1. חלץ: מספר תעודה, מספר הזמנת מקור, שם לקוח, נהג ומספר רכב.
+  2. אימות חתימה: בדוק אם קיימת חתימת מקבל בשטח. אם חסרה חתימה — סמן התראה: ⚠️ חסר חתימה בשטח.
+  3. השוואת כמויות: הצלב כמויות שסופקו מול הזמנת המקור. סמן ✅ סופק במלואו או ⚠️ אספקה חלקית / חוסר מאושר.
+  4. פקדונות שטח: זהה רישומי יד על החזרת בלות או משטחים וסמן לעדכון חשבונות (לינה).
+
+### מודול 3: פענוח הודעות קוליות ודיבור שטח (Voice-to-Dispatch)
+- בעת קבלת קלט קולי / תמלול דיבור מהשטח (של ראמי או הנהגים):
+  - סנן רעשי רקע, מילות קישור וביטויים חופשיים.
+  - חלץ ישויות: שם לקוח/פרויקט, כתובת אספקה, כמויות, וסוג חומר.
+  - המר את הדיבור החופשי לפקודת סידור מנורמלת וכרטיס WhatsApp מעוצב.
+
+### מודול 4: שיגור ישיר ל-WhatsApp דרך Webhook
+- בכל הפקת כרטיס הזמנה או דוח בוקר, בנה במקביל JSON Payload לשיגור דרך ה-Webhook של Make.com:
+  - כתובת: https://hook.eu1.make.com/j1kfxfn5y4goe1lud3dk1phkw4bkjvyr
+  - פרמטרים: orderId, customerName, driver, warehouse, message, wazeUrl.
+  - הוסף כפתור שיתוף ישיר: whatsapp://send?text=[ENCODED_MESSAGE].
+
+---
+
+## 4. תבניות פלט מעוצבות (HTML Render Specifications)
+בעת הפקת כרטיס הזמנה בודדת, השתמשי בתבנית הבאה:
+<div class="border border-slate-200 rounded-2xl p-4 bg-white shadow-sm space-y-2.5 text-right font-sans">
+  <div class="flex justify-between items-center border-b pb-2">
+    <span class="font-black text-sm text-slate-900">📦 הזמנה [מספר הזמנה] — [שם לקוח]</span>
+    <span class="text-xs px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-extrabold">[חכמת / עלי]</span>
+  </div>
+  <div class="text-xs text-slate-700 space-y-1 font-bold">
+    <div>📍 <b>כתובת אספקה:</b> [רחוב, מספר, עיר]</div>
+    <div>🏢 <b>מחסן מוצא:</b> [🏭 4 החרש / 🏟️ 1 התלמיד]</div>
+    <div>🧭 <b>ניווט:</b> <a href="[Waze Link]" target="_blank" class="text-sky-600 underline font-black">נווט בוויז לחץ כאן</a></div>
+  </div>
+  <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800">
+    <div class="font-black text-slate-900 mb-1">🛒 פירוט מוצרים:</div>
+    [שורות מוצרים ומק"טים]
+  </div>
+  <div class="flex justify-between items-center pt-1 text-xs font-extrabold text-slate-700">
+    <span>🛡️ פקדונות: [בלות: X | משטחים: Y]</span>
+    <span class="text-emerald-700">✅ מאושר לסידור</span>
+  </div>
+</div>
 `;
 
 async function startServer() {
@@ -104,6 +163,53 @@ async function startServer() {
       drivers: SABAN_DRIVERS,
       warehouses: SABAN_WAREHOUSES
     });
+  });
+
+  // API: Make.com Webhook Dispatch (Module 4)
+  app.post('/api/webhook-dispatch', async (req, res) => {
+    try {
+      const webhookUrl = 'https://hook.eu1.make.com/j1kfxfn5y4goe1lud3dk1phkw4bkjvyr';
+      let payload = req.body;
+      if (typeof payload === 'string') {
+        try {
+          payload = JSON.parse(payload);
+        } catch {
+          payload = { message: payload };
+        }
+      }
+      payload = payload || {};
+
+      const response = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderId: payload.orderId || payload.orderNumber || '',
+          customerName: payload.customerName || '',
+          driver: payload.driver || '',
+          warehouse: payload.warehouse || '',
+          message: payload.message || `שידור הזמנה ${payload.orderId || ''} לסידור עבודה`,
+          wazeUrl: payload.wazeUrl || '',
+          timestamp: new Date().toISOString()
+        }),
+        redirect: 'follow'
+      });
+
+      const text = await response.text();
+      return res.status(200).json({
+        status: 'ok',
+        dispatched: true,
+        responseText: text,
+        webhookUrl
+      });
+    } catch (err: any) {
+      console.error('Make.com webhook dispatch warning:', err);
+      return res.status(200).json({
+        status: 'warning',
+        dispatched: false,
+        message: 'שגיאת רשת בשליחה ל-Make.com, נתוני ההזמנה שמורים במערכת',
+        error: err?.message || String(err)
+      });
+    }
   });
 
   // API: Chat Query for Noa AI
@@ -431,27 +537,36 @@ async function startServer() {
 
       if (matched.length > 0) {
         const o = matched[0];
+        const wazeHref = o.wazeUrl || `https://waze.com/ul?q=${encodeURIComponent(o.deliveryAddress)}&navigate=yes`;
+        const waText = encodeURIComponent(`📦 הזמנה ${o.orderNumber} — ${o.customerName}\n📍 כתובת אספקה: ${o.deliveryAddress}\n🏢 מחסן מוצא: ${o.warehouse}\n🚚 נהג: ${o.driver}\n🧭 ניווט Waze: ${wazeHref}\n🛒 מוצרים:\n${o.itemsText}\n🛡️ פקדונות: בלות: ${o.bigBagsDeposit} | משטחים: ${o.palletsDeposit}`);
+
         responseHtml = `
-          <div class="space-y-2 text-xs">
-            <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
-              <span>📦 הזמנה #${o.orderNumber}</span>
-              <span class="text-xs px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold">${o.status}</span>
+          <div class="border border-slate-200 rounded-2xl p-4 bg-white shadow-sm space-y-2.5 text-right font-sans text-xs">
+            <div class="flex justify-between items-center border-b pb-2">
+              <span class="font-black text-sm text-slate-900">📦 הזמנה ${o.orderNumber} — ${o.customerName}</span>
+              <span class="text-xs px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 font-extrabold">${o.driver.includes('חכמת') ? 'חכמת (מרצדס מנוף)' : 'עלי (איסוזו פתוחה)'}</span>
             </div>
-            <div class="space-y-1 font-bold text-slate-700">
-              <div>👤 <strong>לקוח:</strong> ${o.customerName} ${o.customerId ? `(#${o.customerId})` : ''}</div>
-              <div>📍 <strong>כתובת:</strong> ${o.deliveryAddress}</div>
-              <div>🏢 <strong>מחסן:</strong> ${o.warehouse}</div>
-              <div>🚚 <strong>נהג:</strong> ${o.driver}</div>
-              <div>🛡️ <strong>פקדונות:</strong> בלות: ${o.bigBagsDeposit} | משטחים: ${o.palletsDeposit}</div>
+            <div class="text-xs text-slate-700 space-y-1 font-bold">
+              <div>📍 <b>כתובת אספקה:</b> ${o.deliveryAddress}</div>
+              <div>🏢 <b>מחסן מוצא:</b> ${o.warehouse}</div>
+              <div>🧭 <b>ניווט:</b> <a href="${wazeHref}" target="_blank" class="text-sky-600 underline font-black">נווט בוויז לחץ כאן</a></div>
             </div>
-            <div class="p-2 rounded-lg bg-slate-50 border border-slate-200 text-[11px] font-semibold text-slate-600 whitespace-pre-line">
-              ${o.itemsText}
+            <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-800">
+              <div class="font-black text-slate-900 mb-1">🛒 פירוט מוצרים:</div>
+              <div class="whitespace-pre-line text-slate-700 font-medium">${o.itemsText}</div>
             </div>
-            ${
-              o.wazeUrl
-                ? `<div class="pt-1"><a href="${o.wazeUrl}" target="_blank" class="inline-flex items-center gap-1 text-xs text-sky-600 font-black hover:underline">🧭 פתח ניווט Waze</a></div>`
-                : ''
-            }
+            <div class="flex justify-between items-center pt-1 text-xs font-extrabold text-slate-700 border-t border-slate-100">
+              <span>🛡️ פקדונות: [בלות: ${o.bigBagsDeposit} | משטחים: ${o.palletsDeposit}]</span>
+              <span class="text-emerald-700">✅ מאושר לסידור</span>
+            </div>
+            <div class="pt-2 flex items-center justify-between gap-2">
+              <a href="whatsapp://send?text=${waText}" class="flex-1 py-1.5 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-black text-center transition flex items-center justify-center gap-1 shadow-xs">
+                <span>📲 שתף בוואטסאפ</span>
+              </a>
+              <button onclick="window.dispatchMakeWebhook && window.dispatchMakeWebhook('${o.orderNumber}', '${o.customerName}', '${o.driver}', '${o.warehouse}', '${o.deliveryAddress}')" class="flex-1 py-1.5 px-2.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-[11px] font-black text-center transition flex items-center justify-center gap-1 shadow-xs cursor-pointer">
+                <span>🚀 שגר ל-Make.com</span>
+              </button>
+            </div>
           </div>
         `;
       } else {

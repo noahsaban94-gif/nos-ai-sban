@@ -82,6 +82,9 @@ export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
   // Quick Deposit Calc state
   const [sandBags, setSandBags] = useState<number>(0);
   const [cementSacks, setCementSacks] = useState<number>(0);
+  const [plasterSacks, setPlasterSacks] = useState<number>(0);
+  const [blocksCount, setBlocksCount] = useState<number>(0);
+  const [isNoUnload, setIsNoUnload] = useState<boolean>(false);
 
   const handleSaveApiUrl = () => {
     localStorage.setItem('saban_api_url', apiUrl.trim());
@@ -108,10 +111,15 @@ export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
     return matchQuery && matchDriver && matchStatus;
   });
 
-  const calcResult = calculateDeposits([
-    { name: 'חול שק גדול בלה', quantity: sandBags },
-    { name: 'מלט אפור שק', quantity: cementSacks },
-  ]);
+  const calcResult = calculateDeposits(
+    [
+      { name: 'שק גדול בלה (11511)', quantity: sandBags, sku: '60002' },
+      { name: 'מלט אפור 25 ק"ג (10002)', quantity: cementSacks, sku: '10002' },
+      { name: 'טיח חוץ 710 / דבקים (15710)', quantity: plasterSacks, sku: '15710' },
+      { name: 'בלוק 20 בטון (60006)', quantity: blocksCount },
+    ],
+    isNoUnload
+  );
 
   return (
     <>
@@ -254,50 +262,112 @@ export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
 
           {/* Deposit Calculator Widget */}
           <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-3">
-            <div className="text-xs font-black text-emerald-900 flex items-center gap-1.5">
-              <ShieldAlert className="w-4 h-4 text-emerald-600" />
-              <span>מחשבון פקדונות מהיר (חוק 1:1 לקומקס)</span>
+            <div className="text-xs font-black text-emerald-900 flex items-center justify-between">
+              <div className="flex items-center gap-1.5">
+                <ShieldAlert className="w-4 h-4 text-emerald-600" />
+                <span>מחשבון פקדונות קשיח (v3.0 - קומקס)</span>
+              </div>
+              <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-700 cursor-pointer bg-white px-2 py-0.5 rounded-md border border-emerald-200">
+                <input
+                  type="checkbox"
+                  checked={isNoUnload}
+                  onChange={(e) => setIsNoUnload(e.target.checked)}
+                  className="rounded text-emerald-600 focus:ring-emerald-500"
+                />
+                <span>הובלה ללא פריקה (פטור)</span>
+              </label>
             </div>
+
             <div className="grid grid-cols-2 gap-2 text-xs">
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">שקים גדולים / בלות:</label>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">בלות שק גדול (60002):</label>
                 <input
                   type="number"
                   min="0"
                   value={sandBags || ''}
                   onChange={(e) => setSandBags(Number(e.target.value))}
                   placeholder="0"
-                  className="w-full bg-white border border-emerald-300 rounded-lg p-2 text-center font-bold outline-none"
+                  className="w-full bg-white border border-emerald-300 rounded-lg p-1.5 text-center font-bold outline-none"
                 />
+                <span className="text-[10px] text-slate-500 font-semibold">יחס 1:1 (35 ₪)</span>
               </div>
               <div>
-                <label className="block text-[11px] font-bold text-slate-700 mb-1">שקי מלט / טיח (25 ק"ג):</label>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">שקי מלט 25 ק"ג (10002):</label>
                 <input
                   type="number"
                   min="0"
                   value={cementSacks || ''}
                   onChange={(e) => setCementSacks(Number(e.target.value))}
                   placeholder="0"
-                  className="w-full bg-white border border-emerald-300 rounded-lg p-2 text-center font-bold outline-none"
+                  className="w-full bg-white border border-emerald-300 rounded-lg p-1.5 text-center font-bold outline-none"
                 />
+                <span className="text-[10px] text-slate-500 font-semibold">סף 40 למשטח</span>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">שקי טיח/דבק (15710):</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={plasterSacks || ''}
+                  onChange={(e) => setPlasterSacks(Number(e.target.value))}
+                  placeholder="0"
+                  className="w-full bg-white border border-emerald-300 rounded-lg p-1.5 text-center font-bold outline-none"
+                />
+                <span className="text-[10px] text-slate-500 font-semibold">סף 20 למשטח</span>
+              </div>
+              <div>
+                <label className="block text-[11px] font-bold text-slate-700 mb-1">בלוק 20 בטון (60006):</label>
+                <input
+                  type="number"
+                  min="0"
+                  value={blocksCount || ''}
+                  onChange={(e) => setBlocksCount(Number(e.target.value))}
+                  placeholder="0"
+                  className="w-full bg-white border border-emerald-300 rounded-lg p-1.5 text-center font-bold outline-none"
+                />
+                <span className="text-[10px] text-slate-500 font-semibold">75 יח' למשטח</span>
               </div>
             </div>
+
             <div className="p-2.5 rounded-xl bg-white border border-emerald-200 text-xs font-bold text-slate-800 space-y-1">
-              <div className="flex justify-between">
-                <span>פקדון בלות (מק"ט 60002):</span>
-                <span className="text-sky-700 font-extrabold">{calcResult.bigBags} יח'</span>
-              </div>
-              <div className="flex justify-between">
-                <span>פקדון משטח סבן (מק"ט 60060):</span>
-                <span className="text-emerald-700 font-extrabold">{calcResult.pallets} יח' (סף 40)</span>
-              </div>
+              {calcResult.isExempt ? (
+                <div className="text-emerald-700 font-black">
+                  ✅ פטור מלא מפקדונות בלות ומשטחים (הובלה ללא פריקה, מק"ט 818050–818118)
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between">
+                    <span>פקדון בלות (מק"ט 60002):</span>
+                    <span className="text-sky-700 font-extrabold">{calcResult.bigBags} יח' ({calcResult.bigBags * 35} ₪)</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>פקדון משטח סבן (מק"ט 60060):</span>
+                    <span className="text-emerald-700 font-extrabold">{calcResult.pallets} יח' ({calcResult.pallets * 35} ₪)</span>
+                  </div>
+                  {calcResult.blockPallets > 0 && (
+                    <div className="flex justify-between">
+                      <span>משטח בלוקים (מק"ט 60006):</span>
+                      <span className="text-purple-700 font-extrabold">{calcResult.blockPallets} יח'</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between border-t border-slate-100 pt-1 text-slate-900 font-black">
+                    <span>סה"כ פקדונות (לפני מע"מ):</span>
+                    <span className="text-emerald-800">{calcResult.totalDepositCostBeforeVat} ₪</span>
+                  </div>
+                </>
+              )}
             </div>
+
             <button
               onClick={() => {
-                onSelectOrderPrompt(`🛡️ בדוק פקדון בקומקס עבור: ${sandBags} בלות חול ו-${cementSacks} שקי מלט`);
+                onSelectOrderPrompt(
+                  isNoUnload
+                    ? '🛡️ האם הזמנה עם הובלה ללא פריקה פטורה מפקדונות בלות ומשטחים בקומקס?'
+                    : `🛡️ בדוק פקדון בקומקס v3.0 עבור: ${sandBags} בלות, ${cementSacks} שקי מלט, ${plasterSacks} טיח ו-${blocksCount} בלוקים`
+                );
                 onClose();
               }}
-              className="w-full py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition"
+              className="w-full py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition cursor-pointer shadow-xs"
             >
               שאל את נועה על פקדון זה בצ'אט
             </button>
@@ -344,21 +414,62 @@ export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
             }}
           />
 
-          {/* System sheets links */}
+          {/* System sheets links (Module 1) */}
           <div className="space-y-2">
-            <div className="text-xs font-extrabold text-slate-700">גיליונות מערכת פעילים:</div>
+            <div className="text-xs font-extrabold text-slate-700">גיליונות מערכת פעילים (Google Sheets):</div>
+            
             <a
-              href="https://docs.google.com/spreadsheets"
+              href="https://docs.google.com/spreadsheets/d/1Ie7gKql_EDdrIN9HqunJc9Ey5k0WXXfPRxs0Vp1Bs2c"
               target="_blank"
               rel="noreferrer"
               className="flex items-center justify-between p-3 rounded-xl bg-emerald-50 hover:bg-emerald-100/70 border border-emerald-200 transition"
             >
               <div className="flex items-center gap-2.5">
                 <Sheet className="w-5 h-5 text-emerald-600" />
-                <div className="text-xs font-bold text-slate-900">מערכת מאוחדת (הזמנות + הצלבה)</div>
+                <div>
+                  <div className="text-xs font-bold text-slate-900">מערכת מאוחדת - הזמנות והצלבה</div>
+                  <div className="text-[10px] text-slate-500 font-semibold">טאבים: הזמנות_סידור | הצלבה_ובקרה</div>
+                </div>
               </div>
               <ExternalLink className="w-4 h-4 text-emerald-600" />
             </a>
+
+            <a
+              href="https://docs.google.com/spreadsheets/d/1VA9J6n9IYcooO_s2xOpnkvyDQWWQD3pfhh0cnenCkoA"
+              target="_blank"
+              rel="noreferrer"
+              className="flex items-center justify-between p-3 rounded-xl bg-sky-50 hover:bg-sky-100/70 border border-sky-200 transition"
+            >
+              <div className="flex items-center gap-2.5">
+                <Sheet className="w-5 h-5 text-sky-600" />
+                <div>
+                  <div className="text-xs font-bold text-slate-900">נועה Ai — דשבורד סידור נהגים</div>
+                  <div className="text-[10px] text-slate-500 font-semibold">סנכרון רכב חכמת (מנוף) ועלי (איסוזו)</div>
+                </div>
+              </div>
+              <ExternalLink className="w-4 h-4 text-sky-600" />
+            </a>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <button
+                onClick={() => {
+                  onSelectOrderPrompt('📋 סנכרן נתונים מול טאב הזמנות_סידור בגיליון המאוחד');
+                  onClose();
+                }}
+                className="py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold text-center transition"
+              >
+                טאב הזמנות_סידור
+              </button>
+              <button
+                onClick={() => {
+                  onSelectOrderPrompt('🔍 בצע הצלבה ובקרה מול טאב הצלבה_ובקרה בגיליון');
+                  onClose();
+                }}
+                className="py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-bold text-center transition"
+              >
+                טאב הצלבה_ובקרה
+              </button>
+            </div>
           </div>
 
           {/* Orders live inspector */}

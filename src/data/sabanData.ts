@@ -3,17 +3,17 @@ import { SabanOrder, DriverInfo } from '../types';
 export const SABAN_DRIVERS: DriverInfo[] = [
   {
     name: 'חכמת',
-    role: 'נהג מנוף ראשי',
-    truck: 'מרצדס מנוף כבד',
+    role: 'מרצדס מנוף כבד (סניף 4 החרש)',
+    truck: 'מרצדס מנוף כבד (פריקות לגובה/מרפסות, אגרגטים, בלוקים)',
     plateNumber: '615-41-002',
     phone: '050-8860896',
     activeOrdersCount: 14,
   },
   {
     name: 'עלי',
-    role: 'נהג חלוקה וגבס',
-    truck: 'משאית איסוזו פתוחה / חלוקה',
-    plateNumber: '654-51-701',
+    role: 'משאית איסוזו חלוקה וגבס (סניף 1 התלמיד)',
+    truck: 'משאית איסוזו פתוחה (גבס, פרופילים, צבע, כלי עבודה, ללא פריקה)',
+    plateNumber: '651-51-701',
     phone: '050-8868010',
     activeOrdersCount: 9,
   },
@@ -22,17 +22,17 @@ export const SABAN_DRIVERS: DriverInfo[] = [
 export const SABAN_WAREHOUSES = [
   {
     code: '4',
-    name: 'מחסן החרש (סניף 4 מרכזי)',
+    name: 'סניף 4 (החרש) - הוד השרון',
     icon: '🏭 4️⃣',
-    specialty: 'חומרי מליטה, שקים גדולים, ברזל, בלוקים, פריקות מנוף',
-    address: 'רחוב החרש 4, א.ת נווה נאמן, הוד השרון',
+    specialty: 'מגרש ראשי, אגרגטים בבלות ובתפזורת, מליטה, בלוקים, ברזל בניין. מנהל חצר: אורן | מנהל חנות: איציק זהבי',
+    address: 'רחוב החרש 4, הוד השרון',
   },
   {
     code: '1',
-    name: 'מחסן התלמיד (סניף 1)',
+    name: 'סניף 1 (התלמיד) - הוד השרון',
     icon: '🏟️ 1️⃣',
-    specialty: 'לוחות גבס, פרופילי מתכת, שפכטלים, צבעים ואיסוזו',
-    address: 'רחוב התלמיד 1, הוד השרון',
+    specialty: 'חומרים קלים, לוחות גבס, פרופילים, צבע, כלי עבודה, ברגים ואיטום. מנהל: תמיר/דורון',
+    address: 'רחוב התלמיד 6, הוד השרון',
   },
 ];
 
@@ -295,30 +295,144 @@ export const SABAN_ORDERS: SabanOrder[] = [
   }
 ];
 
-export function calculateDeposits(items: { name: string; quantity: number }[]) {
+export interface DepositCalculationItem {
+  name: string;
+  quantity: number;
+  sku?: string;
+  isNoUnload?: boolean; // הובלה ללא פריקה (מק"ט 818050-818118)
+}
+
+export function calculateDeposits(
+  items: DepositCalculationItem[],
+  isNoUnloadDelivery: boolean = false
+) {
+  // פטור מפקדונות כאשר ההובלה היא ללא פריקה
+  if (isNoUnloadDelivery) {
+    return {
+      isExempt: true,
+      bigBags: 0,
+      pallets: 0,
+      blockPallets: 0,
+      totalDepositCostBeforeVat: 0,
+      summary: '🛡️ פטור מלא מפקדונות בלות ומשטחים (הובלה ללא פריקה, מק"טים 818050–818118)',
+    };
+  }
+
   let bigBags = 0;
   let pallets = 0;
   let blockPallets = 0;
+  let breakdown: string[] = [];
 
   for (const item of items) {
     const n = item.name.toLowerCase();
+    const sku = item.sku || '';
     const qty = Number(item.quantity) || 0;
+    if (qty <= 0) continue;
 
-    if (n.includes('בלה') || n.includes('שק גדול') || n.includes('חול שק גדול') || n.includes('סומסום שק גדול') || n.includes('טיט שק גדול') || n.includes('חצץ שק גדול') || n.includes('חמרה שק גדול')) {
+    // 1. שק גדול / בלה (מק"ט 60002) - יחס מדויק 1:1
+    // חול (11501), סומסום (11511), טיט (11551), מצע (11540), חצץ (11506), חמרה (11570)
+    if (
+      sku === '60002' ||
+      sku === '11501' ||
+      sku === '11511' ||
+      sku === '11551' ||
+      sku === '11540' ||
+      sku === '11506' ||
+      sku === '11570' ||
+      n.includes('בלה') ||
+      n.includes('שק גדול')
+    ) {
       bigBags += qty;
-    } else if (n.includes('מלט') || n.includes('טיח') || n.includes('ריצופית') || n.includes('פלסטומר') || n.includes('דבק')) {
-      // 40 sacks per pallet
-      pallets += Math.ceil(qty / 40);
-    } else if (n.includes('בלוק')) {
-      // Block pallets
-      blockPallets += Math.ceil(qty / 60);
+      breakdown.push(`${qty} בלות [1:1 מק"ט 60002]`);
+    }
+    // 2. משטח סבן / עץ (מק"ט 60060) - ספי משטחים לפי סוג חומר
+    // מלט אפור 25 ק"ג (מק"ט 10002): החל מ-40 שקים (משטח מלא = 40 שק)
+    else if (sku === '10002' || (n.includes('מלט') && !n.includes('טיח'))) {
+      if (qty >= 40) {
+        const p = Math.floor(qty / 40);
+        pallets += p;
+        breakdown.push(`${p} משטח מלט (${qty} שקים, 40 למשטח)`);
+      }
+    }
+    // סומסום / טיט בשקים (11510 / 11550): החל מ-70 שקים (משטח מלא = 70 שק)
+    else if (sku === '11510' || sku === '11550' || (n.includes('שק') && (n.includes('סומסום') || n.includes('טיט')))) {
+      if (qty >= 70) {
+        const p = Math.floor(qty / 70);
+        pallets += p;
+        breakdown.push(`${p} משטח סומסום/טיט בשקים (${qty} שקים, 70 למשטח)`);
+      }
+    }
+    // טיח חוץ 710 / טיח ממ"ד / דבקים (15710, 15770, 15181, 14603): החל מ-20 שקים
+    else if (
+      sku === '15710' ||
+      sku === '15770' ||
+      sku === '15181' ||
+      sku === '14603' ||
+      n.includes('טיח חוץ') ||
+      n.includes('טיח ממ"ד') ||
+      n.includes('ריצופית') ||
+      n.includes('דבק') ||
+      n.includes('פלסטומר')
+    ) {
+      if (qty >= 20) {
+        const p = Math.ceil(qty / 40); // מעל סף 20 מתחייב משטח
+        pallets += p;
+        breakdown.push(`${p} משטח טיח/דבקים (${qty} שקים, סף 20)`);
+      }
+    }
+    // 3. משטח בלוקים (מק"ט 60006):
+    // בלוק 20 = כל 75 יח' משטח; בלוק 10 = כל 150 יח' משטח
+    else if (n.includes('בלוק')) {
+      if (n.includes('10')) {
+        const bp = Math.ceil(qty / 150);
+        blockPallets += bp;
+        breakdown.push(`${bp} משטח בלוק 10 (${qty} יח', 150 למשטח)`);
+      } else {
+        const bp = Math.ceil(qty / 75);
+        blockPallets += bp;
+        breakdown.push(`${bp} משטח בלוק 20 (${qty} יח', 75 למשטח)`);
+      }
     }
   }
 
+  const bigBagCost = bigBags * 35; // 35 ₪ לפקדון בלה לפני מע"מ
+  const palletCost = pallets * 35;
+  const blockPalletCost = blockPallets * 35;
+  const totalDepositCostBeforeVat = bigBagCost + palletCost + blockPalletCost;
+
   return {
+    isExempt: false,
     bigBags,
     pallets,
     blockPallets,
-    summary: `🛡️ פקדון בלות (מק"ט 60002): ${bigBags} | פקדון משטח סבן (מק"ט 60060): ${pallets} ${blockPallets > 0 ? `| משטחי בלוקים (מק"ט 60006): ${blockPallets}` : ''}`
+    totalDepositCostBeforeVat,
+    breakdown,
+    summary: `🛡️ פקדון בלות (מק"ט 60002): ${bigBags} | פקדון משטח סבן (מק"ט 60060): ${pallets}${
+      blockPallets > 0 ? ` | משטח בלוקים (מק"ט 60006): ${blockPallets}` : ''
+    } (עלות פקדונות לפני מע"מ: ${totalDepositCostBeforeVat} ₪)`
+  };
+}
+
+// מחירון בסיס להצעות מחיר (לפני מע"מ) - נוסחת סיכום: מוצרים + פקדונות + הובלה + 18% מע"מ
+export function calculateQuote(params: {
+  productsTotalBeforeVat: number;
+  bigBagsCount: number;
+  palletsCount: number;
+  deliveryCostBeforeVat: number;
+  isNoUnload?: boolean;
+}) {
+  const depositBeforeVat = params.isNoUnload ? 0 : (params.bigBagsCount + params.palletsCount) * 35;
+  const subtotal = params.productsTotalBeforeVat + depositBeforeVat + params.deliveryCostBeforeVat;
+  const vat = Math.round(subtotal * 0.18 * 100) / 100;
+  const grandTotal = Math.round((subtotal + vat) * 100) / 100;
+
+  return {
+    productsTotalBeforeVat: params.productsTotalBeforeVat,
+    depositBeforeVat,
+    deliveryCostBeforeVat: params.deliveryCostBeforeVat,
+    subtotalBeforeVat: subtotal,
+    vat,
+    grandTotal,
+    vatRate: 0.18,
   };
 }

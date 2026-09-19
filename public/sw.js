@@ -1,9 +1,18 @@
 // Safe optional import of OneSignal worker without breaking offline PWA cache
 try {
-  importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+  if (self.location.protocol === 'https:' && !self.location.hostname.includes('localhost')) {
+    importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+  }
 } catch (_) {
   // Offline or OneSignal not required
 }
+
+// Handle message events to prevent unhandled postMessage warnings
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
 
 const CACHE_NAME = 'noa-saban-ai-v1';
 const ASSETS = [
