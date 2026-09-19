@@ -142,9 +142,14 @@ export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
         {/* Header */}
         <div className="p-4 border-b border-slate-200 bg-[#f0f2f5] flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-sky-600 text-white flex items-center justify-center font-black text-lg shadow-sm">
-              ס
-            </div>
+            <img
+              src="https://i.ibb.co/GQfHTYZH/Gemini-Generated-Image-7.png"
+              alt="נועה AI"
+              onError={(e) => {
+                (e.target as HTMLImageElement).src = '/icon.svg';
+              }}
+              className="w-10 h-10 rounded-xl object-cover ring-2 ring-sky-500 shadow-sm"
+            />
             <div>
               <h2 className="font-extrabold text-sm text-slate-900">משקפת תפעול וכלים מקצועיים</h2>
               <p className="text-[11px] font-semibold text-slate-500">ח. סבן חומרי בניין (1994) בע״מ</p>
