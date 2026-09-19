@@ -14,9 +14,10 @@ import {
   X,
   RefreshCw,
   ServerOff,
-  Sparkles
+  Sparkles,
+  Brain
 } from 'lucide-react';
-import { ChatMessage } from './types';
+import { ChatMessage, OperationalMemoryItem } from './types';
 import { SABAN_ORDERS } from './data/sabanData';
 import { playNotificationChime } from './utils/audio';
 import { ProfessionalDrawer } from './components/ProfessionalDrawer';
@@ -24,8 +25,42 @@ import { QuickPromptsBar } from './components/QuickPromptsBar';
 import { PWAInstallButton } from './components/PWAInstallButton';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { WarehouseOrdersChart } from './components/WarehouseOrdersChart';
+import { OperationalMemoryModal } from './components/OperationalMemoryModal';
 
 const AVATAR_URL = 'https://i.ibb.co/GQfHTYZH/Gemini-Generated-Image-7.png';
+
+export const DEFAULT_MEMORIES: OperationalMemoryItem[] = [
+  {
+    id: 'mem-1',
+    category: 'נהגים',
+    text: 'חכמת (מרצדס מנוף 615-41-002) — יוצא קבוע ב-06:30 מסניף 4 החרש. אתרים עם רחובות צרים יש לשבץ ראשונים בסבב לפני תחילת עומסי תנועה.',
+    timestamp: 'קבוע תפעולי',
+  },
+  {
+    id: 'mem-2',
+    category: 'נהגים',
+    text: 'עלי (איסוזו חלוקה 651-51-701) — מוביל בלעדית גבס, פרופילים, צבע וציוד חנות מסניף 1 התלמיד, ופריקות ידניות / הובלה ללא פריקה.',
+    timestamp: 'קבוע תפעולי',
+  },
+  {
+    id: 'mem-3',
+    category: 'לקוחות ואתרים',
+    text: 'לקוח שחר שאול (הבנים 7 הוד השרון) — לתאם תמיד טלפונית חצי שעה מראש לפני הגעת המשאית לאתר.',
+    timestamp: 'קבוע תפעולי',
+  },
+  {
+    id: 'mem-4',
+    category: 'לקוחות ואתרים',
+    text: 'לקוח ל.ה בניה (לב השכונה) — פריקת מנוף מרפסת קומה 2 בלבד, חובה לא לחסום את ציר הגישה לאמבולנסים.',
+    timestamp: 'קבוע תפעולי',
+  },
+  {
+    id: 'mem-5',
+    category: 'הנהלה וחשבונות',
+    text: 'כל תעודת משלוח עם חוסר מאושר, זיכוי בלות או חריגת מחיר מועברת מיידית ללינה לחיוב בהנה"ח באישור הראל או ורד.',
+    timestamp: 'קבוע תפעולי',
+  },
+];
 
 /**
  * פונקציית עזר עם מנגנון Retry אוטומטי במקרה של שגיאת 500 או שגיאת רשת
@@ -109,6 +144,20 @@ export default function App() {
   });
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isAttachModalOpen, setIsAttachModalOpen] = useState(false);
+  const [isMemoryModalOpen, setIsMemoryModalOpen] = useState(false);
+
+  const [memories, setMemories] = useState<OperationalMemoryItem[]>(() => {
+    try {
+      const saved = localStorage.getItem('saban_operational_memory');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      }
+    } catch (e) {
+      console.warn('Failed to parse operational memories:', e);
+    }
+    return DEFAULT_MEMORIES;
+  });
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -127,6 +176,34 @@ export default function App() {
       console.warn('Could not save chat history:', e);
     }
   }, [messages]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem('saban_operational_memory', JSON.stringify(memories));
+    } catch (e) {
+      console.warn('Could not save operational memories:', e);
+    }
+  }, [memories]);
+
+  const handleAddMemory = (category: OperationalMemoryItem['category'], text: string) => {
+    const newItem: OperationalMemoryItem = {
+      id: `mem-${Date.now()}`,
+      category,
+      text,
+      timestamp: new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' }),
+    };
+    setMemories((prev) => [newItem, ...prev]);
+  };
+
+  const handleDeleteMemory = (id: string) => {
+    setMemories((prev) => prev.filter((m) => m.id !== id));
+  };
+
+  const handleResetMemories = () => {
+    if (window.confirm('ראמי, לאפס את פנקס הזיכרון הלוגיסטי לעובדות ברירת המחדל של ח. סבן?')) {
+      setMemories(DEFAULT_MEMORIES);
+    }
+  };
 
   const [aiInfo, setAiInfo] = useState<{
     totalKeys: number;
@@ -200,6 +277,38 @@ export default function App() {
     const text = queryText.trim();
     if (!text) return;
 
+    // Check if Rami is recording a memory note
+    const isFilingCommand =
+      text.startsWith('תזכרי ש') ||
+      text.startsWith('תזכרי:') ||
+      text.startsWith('תייקי בזיכרון ש') ||
+      text.startsWith('תייקי בזיכרון:') ||
+      text.startsWith('שימי לב ש') ||
+      text.startsWith('תרשמי בפנקס') ||
+      text.startsWith('תשמרי בפנקס');
+
+    if (isFilingCommand) {
+      const noteContent = text
+        .replace(/^תזכרי\s*ש?:?/i, '')
+        .replace(/^תייקי\s*בזיכרון\s*ש?:?/i, '')
+        .replace(/^שימי\s*לב\s*ש?:?/i, '')
+        .replace(/^תרשמי\s*בפנקס\s*ש?:?/i, '')
+        .replace(/^תשמרי\s*בפנקס\s*ש?:?/i, '')
+        .trim();
+
+      if (noteContent) {
+        let category: OperationalMemoryItem['category'] = 'כללי';
+        if (noteContent.includes('חכמת') || noteContent.includes('עלי') || noteContent.includes('נהג') || noteContent.includes('משאית') || noteContent.includes('סבב')) {
+          category = 'נהגים';
+        } else if (noteContent.includes('לקוח') || noteContent.includes('אתר') || noteContent.includes('רעננה') || noteContent.includes('הוד השרון') || noteContent.includes('כפר סבא') || noteContent.includes('פריקה')) {
+          category = 'לקוחות ואתרים';
+        } else if (noteContent.includes('לינה') || noteContent.includes('הראל') || noteContent.includes('ורד') || noteContent.includes('חשבונית') || noteContent.includes('חיוב') || noteContent.includes('חוסר')) {
+          category = 'הנהלה וחשבונות';
+        }
+        handleAddMemory(category, noteContent);
+      }
+    }
+
     const time = new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' });
     const userMsg: ChatMessage = {
       id: `user-${Date.now()}`,
@@ -208,6 +317,7 @@ export default function App() {
       timestamp: time,
     };
 
+    const currentHistory = [...messages, userMsg];
     setMessages((prev) => [...prev, userMsg]);
     setInputVal('');
     setIsTyping(true);
@@ -217,6 +327,12 @@ export default function App() {
 
     let replyHtml = '';
     let usedOfflineFallback = false;
+
+    // Build context history payload (last 8 messages)
+    const historyPayload = messages.slice(-8).map((m) => ({
+      role: m.sender === 'rami' ? 'user' : 'model',
+      text: m.text,
+    }));
 
     try {
       // Primary route: Send to /api/chat using fetchWithRetry with automatic retry on 500 / server errors
@@ -229,6 +345,8 @@ export default function App() {
             query: text,
             sender: 'ראמי',
             googleScriptUrl: customApiUrl || undefined,
+            history: historyPayload,
+            operationalMemory: memories,
           }),
         },
         2, // up to 2 retries
@@ -270,7 +388,7 @@ export default function App() {
         const directRes = await fetch(customApiUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ action: 'CHAT_QUERY', query: text, sender: 'Rami' }),
+          body: JSON.stringify({ action: 'CHAT_QUERY', query: text, sender: 'Rami', operationalMemory: memories }),
           mode: 'cors',
         });
         if (directRes.ok) {
@@ -285,7 +403,7 @@ export default function App() {
     // 3. Fallback to rich local Saban heuristic engine with a friendly, professional banner
     if (!replyHtml) {
       usedOfflineFallback = true;
-      const localReply = generateLocalSabanReply(text);
+      const localReply = generateLocalSabanReply(text, currentHistory, memories);
       replyHtml = `
         <div class="space-y-2.5">
           <div class="flex items-center gap-2 p-2.5 rounded-xl bg-amber-50/90 border border-amber-200 text-amber-900 text-xs font-bold">
@@ -349,12 +467,189 @@ export default function App() {
     playNotificationChime(soundEnabled);
   };
 
-  const generateLocalSabanReply = (query: string): string => {
+  const generateLocalSabanReply = (
+    query: string,
+    history: ChatMessage[],
+    operationalMemories: OperationalMemoryItem[]
+  ): string => {
     const q = query.toLowerCase();
+
+    // 1. Filing command confirmation
+    if (
+      q.startsWith('תזכרי') ||
+      q.startsWith('תייקי') ||
+      q.startsWith('שימי לב ש') ||
+      q.startsWith('תרשמי בפנקס') ||
+      q.startsWith('תשמרי בפנקס')
+    ) {
+      const cleanNote = query
+        .replace(/^תזכרי\s*ש?:?/i, '')
+        .replace(/^תייקי\s*בזיכרון\s*ש?:?/i, '')
+        .replace(/^שימי\s*לב\s*ש?:?/i, '')
+        .replace(/^תרשמי\s*בפנקס\s*ש?:?/i, '')
+        .replace(/^תשמרי\s*בפנקס\s*ש?:?/i, '')
+        .trim();
+
+      return `
+        <div class="space-y-2 text-xs">
+          <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl space-y-1.5">
+            <div class="flex items-center gap-2 text-emerald-900 font-black text-sm">
+              <span>🧠 תויק בהצלחה בפנקס הזיכרון הלוגיסטי!</span>
+            </div>
+            <div class="text-slate-800 font-bold bg-white/80 p-2 rounded-lg border border-emerald-100">
+              "${cleanNote || query}"
+            </div>
+            <div class="text-[11px] text-emerald-800 font-semibold">
+              רשמתי זאת בפנקס הזיכרון של המערכת, ראמי ❤️. המידע יישלף אוטומטית בכל שיבוץ עבודה, הצעת מחיר ודוח עתידי!
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 2. Contextual continuation check (e.g. "תוסיף לו גם 2 שק מלט", "שלח לו")
+    if (q.includes('תוסיף לו') || q.includes('תוסיפי לו') || q.includes('שלח לו') || q.includes('עדכן אותו')) {
+      // Find the last mentioned customer or order in recent history
+      let lastCustomer = 'שחר שאול (הזמנה 6215454)';
+      for (let i = history.length - 2; i >= 0; i--) {
+        const hText = history[i].text;
+        const matched = SABAN_ORDERS.find(
+          (o) => hText.includes(o.customerName) || hText.includes(o.orderNumber)
+        );
+        if (matched) {
+          lastCustomer = `${matched.customerName} (הזמנה #${matched.orderNumber})`;
+          break;
+        }
+      }
+
+      return `
+        <div class="space-y-2 text-xs">
+          <div class="p-3 bg-sky-50 border border-sky-200 rounded-xl space-y-2">
+            <div class="font-black text-sky-950 text-sm flex items-center justify-between">
+              <span>✍️ עדכון הזמנה בהמשך לשיחה</span>
+              <span class="text-[10px] bg-sky-200 text-sky-900 px-2 py-0.5 rounded-full font-bold">המשכיות שיחה</span>
+            </div>
+            <div class="text-slate-800 font-bold">
+              הבנתי ראמי! עדכנתי עבור <strong>${lastCustomer}</strong> את הפריטים הנוספים:
+            </div>
+            <div class="p-2 bg-white rounded-lg border border-sky-100 text-slate-700 font-semibold text-[11px]">
+              • תוספת: <strong>${query}</strong><br/>
+              • בקרת פקדונות: 2 שקי מלט (מק"ט 10002) אינם חוצים את סף המשטח (40 שקים) — אין חיוב משטח עץ נוסף (60060).
+            </div>
+            <div class="text-[11px] text-sky-800 font-bold">
+              השינוי מעודכן בסידור של הנהג המוקצה.
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 3. Quick Field Dispatch command (e.g. "לרעננה 4 בלות", "תוציאי לרעננה 4 בלות", "4 בלות לרעננה")
+    if ((q.includes('רעננה') || q.includes('כפר סבא') || q.includes('הוד השרון')) && (q.includes('בלה') || q.includes('בלות') || q.includes('משטח'))) {
+      const city = q.includes('רעננה') ? 'רעננה' : q.includes('כפר סבא') ? 'כפר סבא' : 'הוד השרון';
+      const countMatch = q.match(/\d+/);
+      const bagCount = countMatch ? parseInt(countMatch[0], 10) : 4;
+      const depositTotal = bagCount * 35;
+
+      return `
+        <div class="space-y-2 text-xs">
+          <div class="p-3 bg-emerald-50/90 border border-emerald-200 rounded-xl space-y-2 text-slate-800">
+            <div class="flex items-center justify-between border-b border-emerald-200 pb-1.5 font-black text-emerald-950 text-sm">
+              <span>🚀 פקודת שיגור מהירה — סידור ח. סבן</span>
+              <span class="text-[10px] bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-full font-bold">יעד: ${city}</span>
+            </div>
+            <div class="space-y-1 font-bold text-slate-800">
+              <div>🏢 <strong>מחסן מקור:</strong> סניף 4 החרש (מגרש חומרי בניין כבדים)</div>
+              <div>🏗️ <strong>נהג מוקצה:</strong> חכמת (מרצדס מנוף 615-41-002) — זמין לקו שרון</div>
+              <div>📦 <strong>מטען:</strong> ${bagCount} בלות סומסום/חול (שק גדול מק"ט 60002)</div>
+              <div>🛡️ <strong>פקדונות 1:1:</strong> ${bagCount} שק גדול = ${depositTotal} ₪ פקדון לפני מע"מ</div>
+            </div>
+            <div class="p-2 bg-white rounded-lg border border-emerald-100 text-[11px] text-slate-700 font-semibold">
+              📍 מועבר מיידית לווייז של חכמת ומוכן לשליחה בוואטסאפ לנהג.
+            </div>
+            <div class="flex items-center gap-2 pt-1">
+              <a href="https://waze.com/ul?q=${encodeURIComponent(city)}" target="_blank" class="px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded-lg font-bold text-[11px] inline-flex items-center gap-1">
+                🧭 פתח Waze ל${city}
+              </a>
+              <a href="https://wa.me/972522784534?text=${encodeURIComponent(`שלום חכמת, פקודת יציאה מראמי: ${bagCount} בלות ל${city}, סניף 4 החרש.`)}" target="_blank" class="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold text-[11px] inline-flex items-center gap-1">
+                📲 שגר לחכמת בוואטסאפ
+              </a>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // 4. Price Quotes & Calculations (Formula: (מוצרים) + פקדונות + הובלה/מנוף + מע"מ 18%)
+    if (q.includes('הצעת מחיר') || q.includes('תחשיב') || q.includes('כמה יעלה') || (q.includes('מחיר') && (q.includes('חול') || q.includes('סומסום') || q.includes('טיט')))) {
+      return `
+        <div class="space-y-2 text-xs">
+          <div class="p-3 bg-sky-50 border border-sky-200 rounded-xl space-y-2 text-slate-800">
+            <div class="flex items-center justify-between border-b border-sky-200 pb-1.5 font-black text-sky-950 text-sm">
+              <span>💰 הצעת מחיר מדויקת — ח. סבן חומרי בניין</span>
+              <span class="text-[10px] bg-sky-200 text-sky-900 px-2 py-0.5 rounded-full font-bold">מע"מ 18%</span>
+            </div>
+            <div class="text-[11px] text-slate-600 font-bold">
+              חישוב לפי מחירון קומקס רשמי ונוסחת ההסכם:
+            </div>
+            <div class="space-y-1 bg-white p-2.5 rounded-lg border border-sky-100 font-bold text-[11px] text-slate-800">
+              <div class="flex justify-between">
+                <span>חול ים שק גדול (מק"ט 6000201) x 2 בלות:</span>
+                <span>190.00 ₪</span>
+              </div>
+              <div class="flex justify-between">
+                <span>סומסום שק גדול (מק"ט 6000202) x 2 בלות:</span>
+                <span>210.00 ₪</span>
+              </div>
+              <div class="flex justify-between text-amber-900">
+                <span>פקדון שק גדול (מק"ט 60002) x 4 בלות (35 ₪ ליח'):</span>
+                <span>140.00 ₪</span>
+              </div>
+              <div class="flex justify-between text-sky-800">
+                <span>הובלת מנוף קו שרון (סניף 4 החרש):</span>
+                <span>350.00 ₪</span>
+              </div>
+              <div class="border-t border-slate-200 pt-1 flex justify-between font-black text-slate-900">
+                <span>סה"כ לפני מע"מ:</span>
+                <span>890.00 ₪</span>
+              </div>
+              <div class="flex justify-between text-slate-600 text-[10px]">
+                <span>מע"מ (18%):</span>
+                <span>160.20 ₪</span>
+              </div>
+              <div class="border-t border-sky-200 pt-1 flex justify-between font-black text-sky-950 text-xs">
+                <span>סה"כ לתשלום כולל מע"מ ופקדונות:</span>
+                <span class="text-emerald-700 font-black">1,050.20 ₪</span>
+              </div>
+            </div>
+            <div class="text-[10px] text-slate-500 font-semibold">
+              * זיכוי פקדון בלות (35 ₪ ליח' לפני מע"מ) יבוצע אוטומטית בהחזרת השקים לסניף 4.
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Check if any operational memory matches this query to highlight proactively
+    const matchedMemory = operationalMemories.find((m) =>
+      q.includes(m.category.toLowerCase()) ||
+      (m.text && q.split(' ').some((word) => word.length > 3 && m.text.toLowerCase().includes(word)))
+    );
+
+    let memoryBadge = '';
+    if (matchedMemory) {
+      memoryBadge = `
+        <div class="p-2 bg-amber-50 border border-amber-200 rounded-lg text-amber-950 font-bold text-[11px] flex items-center gap-1.5">
+          <span>🧠</span>
+          <span><strong>תזכורת מפנקס הזיכרון:</strong> ${matchedMemory.text}</span>
+        </div>
+      `;
+    }
 
     if (q.includes('גרף') || q.includes('נתח') || q.includes('עומס') || (q.includes('החרש') && q.includes('התלמיד'))) {
       return `
         <div class="space-y-3 text-xs">
+          ${memoryBadge}
           <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
             <span class="flex items-center gap-1.5">
               <span>📊 ניתוח עומסי עבודה שבועי — ח. סבן</span>
@@ -392,6 +687,7 @@ export default function App() {
     if (q.includes('דוח בוקר') || q.includes('סידור עבודה') || q.includes('דוח יומי')) {
       return `
         <div class="space-y-3">
+          ${memoryBadge}
           <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
             <span>📋 דוח בוקר מרוכז — סדרנות ח. סבן</span>
             <span class="text-xs text-sky-600 bg-sky-50 px-2 py-0.5 rounded-full font-bold">היום</span>
@@ -430,6 +726,7 @@ export default function App() {
     if (q.includes('שיבוץ') || q.includes('חכמת') || q.includes('עלי') || q.includes('רכב')) {
       return `
         <div class="space-y-2.5 text-xs">
+          ${memoryBadge}
           <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1">
             🚚 סטטוס רכבים ושיבוץ נהגים להיום
           </div>
@@ -458,6 +755,7 @@ export default function App() {
     if (q.includes('פקדון') || q.includes('מחשבון') || q.includes('סומסום') || q.includes('מלט')) {
       return `
         <div class="space-y-2 text-xs">
+          ${memoryBadge}
           <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1">
             🛡️ פקדונות קומקס — בדיקת 1:1 של ח. סבן
           </div>
@@ -477,6 +775,7 @@ export default function App() {
       const activeOrders = SABAN_ORDERS.filter((o) => !o.status.includes('סופק'));
       return `
         <div class="space-y-3 text-xs">
+          ${memoryBadge}
           <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
             <span class="flex items-center gap-1.5">
               <span>📋 הזמנות בסטטוס בסידור (ללא סופק)</span>
@@ -525,6 +824,7 @@ export default function App() {
     if (found) {
       return `
         <div class="space-y-2 text-xs font-bold text-slate-800">
+          ${memoryBadge}
           <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
             <span>📦 הזמנה #${found.orderNumber}</span>
             <span class="text-xs px-2 py-0.5 rounded-full bg-sky-100 text-sky-800">${found.status}</span>
@@ -555,6 +855,7 @@ export default function App() {
 
     return `
       <div class="space-y-1.5 text-xs font-bold text-slate-800">
+        ${memoryBadge}
         <div>הפקודה נקלטה, ראמי! המידע נבדק ישירות מול מאגר סידור העבודה.</div>
         <div class="text-slate-600 font-normal">
           אני מחזיקה את כל הנתונים של סניף 4 (החרש) וסניף 1 (התלמיד), מסלולי הנסיעה של חכמת ועלי וחישובי הפקדונות.
@@ -646,6 +947,20 @@ export default function App() {
 
           {/* PWA Install Button */}
           <PWAInstallButton />
+
+          {/* Operational Memory Modal Button */}
+          <button
+            id="memory-notebook-btn"
+            onClick={() => setIsMemoryModalOpen(true)}
+            title="פנקס הזיכרון הלוגיסטי של ראמי"
+            className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-900 font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer"
+          >
+            <Brain className="w-4 h-4 text-sky-700" />
+            <span className="hidden sm:inline">פנקס הזיכרון</span>
+            <span className="bg-sky-200 text-sky-950 px-1.5 py-0.2 rounded-full text-[10px] font-black">
+              {memories.length}
+            </span>
+          </button>
 
           {/* Professional Tools Drawer */}
           <button
@@ -902,6 +1217,16 @@ export default function App() {
 
       {/* Offline Connectivity Banner */}
       <OfflineIndicator />
+
+      {/* Rami's Operational Memory Modal */}
+      <OperationalMemoryModal
+        isOpen={isMemoryModalOpen}
+        onClose={() => setIsMemoryModalOpen(false)}
+        memories={memories}
+        onAddMemory={handleAddMemory}
+        onDeleteMemory={handleDeleteMemory}
+        onResetDefaults={handleResetMemories}
+      />
     </div>
   );
 }

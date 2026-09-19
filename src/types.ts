@@ -40,3 +40,10 @@ export interface DriverInfo {
   phone: string;
   activeOrdersCount: number;
 }
+
+export interface OperationalMemoryItem {
+  id: string;
+  category: 'נהגים' | 'לקוחות ואתרים' | 'הנהלה וחשבונות' | 'כללי';
+  text: string;
+  timestamp: string;
+}
