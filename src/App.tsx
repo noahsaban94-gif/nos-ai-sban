@@ -942,7 +942,7 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden text-slate-900 select-none antialiased bg-[#efeae2] safe-pl safe-pr">
+    <div className="fixed inset-0 h-[100dvh] w-full max-w-full flex flex-col overflow-hidden text-slate-900 select-none antialiased bg-[#efeae2] safe-pl safe-pr">
       {/* Header WhatsApp theme with mobile safe top padding */}
       <header className="h-16 safe-pt px-3 sm:px-5 bg-[#f0f2f5] border-b border-slate-200 shadow-xs flex items-center justify-between z-20 flex-shrink-0 box-content">
         <div className="flex items-center gap-3">
@@ -1065,7 +1065,7 @@ export default function App() {
       {/* Main Chat Scroll View */}
       <main
         id="chat-scroller"
-        className="flex-1 overflow-y-auto px-3 sm:px-6 py-4 space-y-4 whatsapp-bg"
+        className="flex-1 pwa-chat-scroll px-3 sm:px-6 py-4 space-y-4 whatsapp-bg"
       >
         <div id="messages-list" className="max-w-3xl mx-auto space-y-4">
           {/* Day Header Pill */}

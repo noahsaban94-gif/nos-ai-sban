@@ -18,10 +18,17 @@ import {
   Sparkles,
   RefreshCw,
   Key,
-  ShieldCheck
+  ShieldCheck,
+  Smartphone,
+  Download,
+  Share,
+  Layers,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react';
 import { SABAN_ORDERS, SABAN_DRIVERS, calculateDeposits } from '../data/sabanData';
 import { WarehouseOrdersChart } from './WarehouseOrdersChart';
+import { usePWAInstall } from '../hooks/usePWAInstall';
 
 interface ProfessionalDrawerProps {
   isOpen: boolean;
@@ -53,6 +60,23 @@ export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
   // AI Connection Test state
   const [testingAi, setTestingAi] = useState(false);
   const [aiTestResult, setAiTestResult] = useState<string | null>(null);
+
+  // PWA Install hook and guide state
+  const { isInstallable, isInstalled, isIOS, isSamsung, isAndroid, install } = usePWAInstall();
+  const [showInstallGuide, setShowInstallGuide] = useState(false);
+  const [installSuccessMessage, setInstallSuccessMessage] = useState<string | null>(null);
+
+  const handleInstallClick = async () => {
+    if (isInstallable) {
+      const res = await install();
+      if (res) {
+        setInstallSuccessMessage('האפליקציה הותקנה בהצלחה במסך הבית!');
+        setTimeout(() => setInstallSuccessMessage(null), 3000);
+      }
+    } else {
+      setShowInstallGuide((prev) => !prev);
+    }
+  };
 
   const handleTestAi = async () => {
     setTestingAi(true);
@@ -171,6 +195,100 @@ export const ProfessionalDrawer: React.FC<ProfessionalDrawerProps> = ({
               {saveStatus}
             </div>
           )}
+
+          {/* PWA App Installation Menu (Especially for Android & Samsung Galaxy) */}
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-emerald-50/90 to-teal-50/90 border border-emerald-200 shadow-2xs space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="text-xs font-black text-emerald-950 flex items-center gap-1.5">
+                <Smartphone className="w-4 h-4 text-emerald-600" />
+                <span>התקנת אפליקציה במסך הבית (PWA)</span>
+              </div>
+              {isInstalled ? (
+                <span className="text-[10px] font-black bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full border border-emerald-300 flex items-center gap-1">
+                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                  <span>מותקן ופעיל</span>
+                </span>
+              ) : (
+                <span className="text-[10px] font-black bg-sky-100 text-sky-800 px-2 py-0.5 rounded-full border border-sky-300 flex items-center gap-1">
+                  <Layers className="w-3 h-3 text-sky-600" />
+                  <span>{isSamsung ? 'Samsung One UI' : isAndroid ? 'Android' : 'סמארטפון'}</span>
+                </span>
+              )}
+            </div>
+
+            <p className="text-[11px] text-slate-600 leading-relaxed">
+              {isInstalled
+                ? 'האפליקציה פועלת כעת במצב אפליקציה עצמאית (Standalone) ללא סרגלי דפדפן, עם גישה ישירה ממסך הבית ומהירות שיא.'
+                : 'התקן את נועה AI במסך הבית לחוויית אפליקציה טבעית: עבודה במסך מלא ללא שורת כתובת, קיצורי דרך מהירים ועמידות במחסן ובשטח.'}
+            </p>
+
+            {installSuccessMessage && (
+              <div className="p-2.5 rounded-xl bg-emerald-100 text-emerald-800 font-bold text-xs text-center border border-emerald-300 animate-fade-in">
+                {installSuccessMessage}
+              </div>
+            )}
+
+            {!isInstalled && (
+              <div className="space-y-2">
+                {isInstallable ? (
+                  <button
+                    type="button"
+                    onClick={handleInstallClick}
+                    className="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-black transition flex items-center justify-center gap-2 shadow-xs active:scale-98 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4 animate-bounce" />
+                    <span>התקן אפליקציה במסך הבית עכשיו</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => setShowInstallGuide((prev) => !prev)}
+                    className="w-full py-2 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-extrabold transition flex items-center justify-between px-3 shadow-2xs active:scale-98 cursor-pointer"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <Smartphone className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>מדריך התקנה למכשירי אנדרואיד / סמסונג</span>
+                    </span>
+                    {showInstallGuide ? <ChevronUp className="w-3.5 h-3.5" /> : <ChevronDown className="w-3.5 h-3.5" />}
+                  </button>
+                )}
+
+                {showInstallGuide && (
+                  <div className="p-3 bg-white rounded-xl border border-emerald-200 text-xs font-semibold text-slate-700 space-y-2 animate-in fade-in duration-150">
+                    <div className="text-[11px] font-black text-emerald-900 mb-1">
+                      {isSamsung
+                        ? 'צעדי התקנה ב-Samsung Internet או Chrome:'
+                        : isIOS
+                        ? 'צעדי התקנה ב-Safari (iOS):'
+                        : 'צעדי התקנה במכשירי אנדרואיד:'}
+                    </div>
+                    {isIOS ? (
+                      <div className="space-y-1.5 text-[11px] text-slate-600">
+                        <div>1. לחץ על כפתור <strong>שיתוף (Share)</strong> בסרגל הדפדפן.</div>
+                        <div>2. בחר באפשרות <strong>"הוסף למסך הבית" (Add to Home Screen)</strong>.</div>
+                        <div>3. אשר בלחיצה על <strong>"הוסף"</strong>.</div>
+                      </div>
+                    ) : (
+                      <div className="space-y-1.5 text-[11px] text-slate-600">
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-[10px]">1</span>
+                          <span>פתח את תפריט הדפדפן (<strong>שלוש נקודות ⋮</strong> או <strong>תפריט ≡</strong>).</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-[10px]">2</span>
+                          <span>לחץ על <strong>"התקנת אפליקציה" (Install App)</strong> או <strong>"הוסף למסך הבית"</strong>.</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="w-4 h-4 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-black text-[10px]">3</span>
+                          <span>אשר – והאייקון של נועה AI יופיע ישירות במסך הבית שלך!</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Gemini AI Multi-Key Status Card */}
           <div className="p-4 rounded-2xl bg-gradient-to-br from-indigo-50/90 to-sky-50/90 border border-sky-200 shadow-2xs space-y-3">

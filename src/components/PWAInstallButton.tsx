@@ -16,11 +16,11 @@ export const PWAInstallButton: React.FC = () => {
       <button
         id="pwa-install-btn"
         onClick={install}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm transition active:scale-95 cursor-pointer"
+        className="flex items-center gap-1.5 px-2 sm:px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs shadow-sm transition active:scale-95 cursor-pointer"
         title="התקן כאפליקציה במסך הבית"
       >
-        <Download className="w-4 h-4 animate-bounce" />
-        <span>התקן אפליקציה</span>
+        <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+        <span className="hidden xs:inline sm:inline">התקן אפליקציה</span>
       </button>
     );
   }
@@ -31,10 +31,10 @@ export const PWAInstallButton: React.FC = () => {
       <button
         id="pwa-guide-install-btn"
         onClick={() => setShowGuideModal(true)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-extrabold text-xs shadow-xs transition active:scale-95 cursor-pointer"
+        className="flex items-center gap-1.5 px-2 sm:px-2.5 py-1.5 rounded-xl bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 text-emerald-800 font-extrabold text-xs shadow-xs transition active:scale-95 cursor-pointer"
         title="התקנה במסך הבית בסמסונג / סמארטפון"
       >
-        <Smartphone className="w-4 h-4 text-emerald-700" />
+        <Smartphone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-700" />
         <span className="hidden sm:inline">התקן בנייד</span>
       </button>
 

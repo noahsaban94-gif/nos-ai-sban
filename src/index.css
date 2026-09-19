@@ -2,29 +2,58 @@
 
 @layer base {
   html, body {
+    height: 100%;
+    height: 100dvh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    position: fixed;
+    inset: 0;
     font-family: 'Heebo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #efeae2;
     touch-action: manipulation;
     -webkit-tap-highlight-color: transparent;
-    overscroll-behavior-y: none;
+    overscroll-behavior: none;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    height: 100%;
+    height: 100dvh;
+    width: 100%;
+    overflow: hidden;
+    position: relative;
   }
 }
 
 /* Safe areas for Samsung Galaxy & modern notched smartphones */
 .safe-pt {
-  padding-top: env(safe-area-inset-top, 0px);
+  padding-top: max(0.5rem, env(safe-area-inset-top, 0px));
 }
 
 .safe-pb {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-bottom: max(0.75rem, env(safe-area-inset-bottom, 0px));
 }
 
 .safe-pl {
-  padding-left: env(safe-area-inset-left, 0px);
+  padding-left: max(0.25rem, env(safe-area-inset-left, 0px));
 }
 
 .safe-pr {
-  padding-right: env(safe-area-inset-right, 0px);
+  padding-right: max(0.25rem, env(safe-area-inset-right, 0px));
+}
+
+/* Specific Samsung Navigation Bar / Gesture Pill clearance */
+.samsung-footer-safe {
+  padding-bottom: max(0.85rem, calc(env(safe-area-inset-bottom, 0px) + 0.6rem));
+}
+
+/* Prevent outer overscroll and isolate smooth scroll inside the chat container */
+.pwa-chat-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 .whatsapp-bg {

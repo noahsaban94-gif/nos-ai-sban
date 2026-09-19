@@ -5,15 +5,41 @@ interface BeforeInstallPromptEvent extends Event {
   userChoice: Promise<{ outcome: 'accepted' | 'dismissed'; platform: string }>;
 }
 
+// Global prompt reference so it is captured immediately upon script evaluation
+// and prevents the browser's default ambient/mini-infobar prompt from popping up arbitrarily.
+let globalDeferredPrompt: BeforeInstallPromptEvent | null = null;
+const listeners = new Set<() => void>();
+
+if (typeof window !== 'undefined') {
+  window.addEventListener('beforeinstallprompt', (e: Event) => {
+    // Suppress default browser banner/prompt everywhere
+    e.preventDefault();
+    globalDeferredPrompt = e as BeforeInstallPromptEvent;
+    listeners.forEach((listener) => listener());
+  });
+
+  window.addEventListener('appinstalled', () => {
+    globalDeferredPrompt = null;
+    listeners.forEach((listener) => listener());
+  });
+}
+
 export function usePWAInstall() {
-  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [isInstalled, setIsInstalled] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(
+    () => globalDeferredPrompt
+  );
+  const [isInstalled, setIsInstalled] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as unknown as { standalone?: boolean }).standalone === true
+    );
+  });
   const [isIOS, setIsIOS] = useState(false);
   const [isSamsung, setIsSamsung] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
 
   useEffect(() => {
-    // Detect standalone mode (already installed as PWA or Samsung WebApp)
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
@@ -22,44 +48,38 @@ export function usePWAInstall() {
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
     const isAndroidDevice = /android/.test(userAgent);
-    const isSamsungBrowser = /samsungbrowser/.test(userAgent) || (/samsung/i.test(navigator.userAgent) && isAndroidDevice);
+    const isSamsungBrowser =
+      /samsungbrowser/.test(userAgent) || (/samsung/i.test(navigator.userAgent) && isAndroidDevice);
 
     setIsIOS(isIOSDevice);
     setIsAndroid(isAndroidDevice);
     setIsSamsung(isSamsungBrowser);
 
-    if (isStandalone) {
-      return;
-    }
-
-    const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent default mini-infobar so custom in-app install button can trigger it directly
-      e.preventDefault();
-      setDeferredPrompt(e as BeforeInstallPromptEvent);
+    const updateState = () => {
+      setDeferredPrompt(globalDeferredPrompt);
+      const standaloneNow =
+        window.matchMedia('(display-mode: standalone)').matches ||
+        (window.navigator as unknown as { standalone?: boolean }).standalone === true;
+      setIsInstalled(standaloneNow);
     };
 
-    const handleAppInstalled = () => {
-      setIsInstalled(true);
-      setDeferredPrompt(null);
-    };
-
-    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-    window.addEventListener('appinstalled', handleAppInstalled);
-
+    listeners.add(updateState);
     return () => {
-      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
-      window.removeEventListener('appinstalled', handleAppInstalled);
+      listeners.delete(updateState);
     };
   }, []);
 
   const install = async () => {
-    if (!deferredPrompt) return false;
+    const promptEvent = deferredPrompt || globalDeferredPrompt;
+    if (!promptEvent) return false;
     try {
-      await deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
+      await promptEvent.prompt();
+      const choice = await promptEvent.userChoice;
       if (choice && choice.outcome === 'accepted') {
         setIsInstalled(true);
+        globalDeferredPrompt = null;
         setDeferredPrompt(null);
+        listeners.forEach((l) => l());
         return true;
       }
     } catch (err) {
@@ -69,7 +89,7 @@ export function usePWAInstall() {
   };
 
   return {
-    isInstallable: !!deferredPrompt,
+    isInstallable: !!(deferredPrompt || globalDeferredPrompt),
     isInstalled,
     isIOS,
     isSamsung,
