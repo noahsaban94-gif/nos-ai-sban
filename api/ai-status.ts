@@ -33,15 +33,25 @@ export default async function handler(req: any, res: any) {
     return;
   }
 
-  const keys = getAllGeminiKeys();
-  res.status(200).json({
-    status: keys.length > 0 ? 'connected' : 'local-engine',
-    totalKeys: keys.length,
-    model: 'gemini-3.8-flash',
-    rotationEnabled: keys.length > 1,
-    message:
-      keys.length > 0
-        ? `מחובר בהצלחה — ${keys.length} מפתחות Gemini פעילים ברוטציה אוטומטית`
-        : 'מנוע סדרנות מקומי חכם פעיל'
-  });
+  try {
+    const keys = getAllGeminiKeys();
+    res.status(200).json({
+      status: keys.length > 0 ? 'connected' : 'local-engine',
+      totalKeys: keys.length,
+      model: 'gemini-3.8-flash',
+      rotationEnabled: keys.length > 1,
+      message:
+        keys.length > 0
+          ? `מחובר בהצלחה — ${keys.length} מפתחות Gemini פעילים ברוטציה אוטומטית`
+          : 'מנוע סדרנות מקומי חכם פעיל'
+    });
+  } catch (err) {
+    res.status(200).json({
+      status: 'local-engine',
+      totalKeys: 0,
+      model: 'noa-local-engine',
+      rotationEnabled: false,
+      message: 'מנוע סדרנות מקומי חכם פעיל'
+    });
+  }
 }

@@ -1,3 +1,10 @@
+// Safe optional import of OneSignal worker without breaking offline PWA cache
+try {
+  importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+} catch (_) {
+  // Offline or OneSignal not required
+}
+
 const CACHE_NAME = 'noa-saban-ai-v1';
 const ASSETS = [
   '/',

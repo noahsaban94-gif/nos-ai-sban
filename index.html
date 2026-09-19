@@ -24,28 +24,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Rubik:wght@500;600;700;800;900&display=swap" rel="stylesheet">
 
-  <!-- OneSignal Web Push SDK -->
-  <script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
   <script>
-    window.OneSignalDeferred = window.OneSignalDeferred || [];
-    OneSignalDeferred.push(async function(OneSignal) {
-      try {
-        const savedAppId = localStorage.getItem('onesignal_app_id');
-        if (savedAppId && savedAppId.length > 10) {
-          await OneSignal.init({
-            appId: savedAppId,
-            allowLocalhostAsSecureOrigin: true,
-            serviceWorkerPath: 'OneSignalSDKWorker.js',
-            serviceWorkerParam: { scope: '/' },
-            notifyButton: { enable: false },
-          });
-        }
-      } catch (err) {
-        // Safe catch for local dev or missing permissions
-        console.debug('OneSignal init:', err);
-      }
-    });
-
+    // Register PWA Service Worker
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js').catch((err) => {
@@ -53,6 +33,34 @@
         });
       });
     }
+
+    // Load OneSignal Push Notifications only if an App ID was explicitly configured
+    (function() {
+      try {
+        const savedAppId = localStorage.getItem('onesignal_app_id');
+        if (savedAppId && savedAppId.trim().length > 10) {
+          const osScript = document.createElement('script');
+          osScript.src = 'https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js';
+          osScript.defer = true;
+          document.head.appendChild(osScript);
+
+          window.OneSignalDeferred = window.OneSignalDeferred || [];
+          window.OneSignalDeferred.push(async function(OneSignal) {
+            try {
+              await OneSignal.init({
+                appId: savedAppId.trim(),
+                allowLocalhostAsSecureOrigin: true,
+                serviceWorkerPath: 'sw.js',
+                serviceWorkerParam: { scope: '/' },
+                notifyButton: { enable: false },
+              });
+            } catch (err) {
+              console.debug('OneSignal init notice:', err);
+            }
+          });
+        }
+      } catch (_) {}
+    })();
   </script>
 </head>
 <body class="h-full w-full overflow-hidden text-slate-900 bg-[#efeae2] select-none antialiased">

@@ -22,8 +22,13 @@ export function usePWAInstall() {
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
     setIsIOS(isIOSDevice);
 
+    // If already installed/standalone, do not intercept or prevent banners
+    if (isStandalone) {
+      return;
+    }
+
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent default browser banner so custom install button can trigger it
+      // Prevent default mini-infobar so custom in-app install button can trigger it
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
