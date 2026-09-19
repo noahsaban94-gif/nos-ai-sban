@@ -258,7 +258,7 @@ async function startServer() {
     // 2. Try Gemini API with Multi-Key Rotation across all configured keys
     const keys = getAllGeminiKeys();
     if (keys.length > 0) {
-      const candidateModels = ['gemini-3.8-flash', 'gemini-flash-latest'];
+      const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
 
       for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
         const apiKey = keys[keyIdx];
@@ -277,7 +277,7 @@ async function startServer() {
                         SABAN_ORDERS.slice(0, 15),
                         null,
                         2
-                      )}\n\nראמי פונה עכשיו: "${cleanQuery}".\nהגיבי כנועה AI — מוח לוגיסטי, סדרנית ויד ימינו של ראמי, בחמימות, חדות ומקצועיות, עם שימוש בשפה המקצועית של ענף הבנייה ובפורמט HTML נקי ומעוצב.`
+                      )}\n\nראמי פונה עכשיו: "${cleanQuery}".\nהגיבי כנועה AI — מוח לוגיסטי, סדרנית ויד ימינו של ראמי, בחמימות, חדות ומקצועיות, עם שימוש בשפה המקצועית של ענף הבנייה ובפורמט HTML נקי ומעוצב עם טקסט כהה וקריא.`
                     }
                   ]
                 }
@@ -338,7 +338,35 @@ async function startServer() {
     const q = cleanQuery.toLowerCase();
     let responseHtml = '';
 
-    if (q.includes('דוח בוקר') || q.includes('סידור עבודה') || q.includes('דוח יומי')) {
+    // Human greeting
+    if (
+      q === 'היי' ||
+      q === 'שלום' ||
+      q === 'בוקר טוב' ||
+      q === 'ערב טוב' ||
+      q === 'היי נועה' ||
+      q === 'שלום נועה' ||
+      q === 'נועה' ||
+      q.startsWith('היי נועה') ||
+      q.startsWith('שלום נועה') ||
+      q.startsWith('מה קורה') ||
+      q.startsWith('מה נשמע')
+    ) {
+      responseHtml = `
+        <div class="text-slate-900 font-bold text-sm leading-relaxed space-y-2">
+          <div>היי ראמי! ❤️ אני כאן ומקשיבה.</div>
+          <div class="text-xs text-slate-700 font-medium bg-white/90 p-2.5 rounded-xl border border-slate-200">
+            אני מסונכרנת עם נתוני סידור העבודה של ח. סבן (סניף 4 החרש וסניף 1 התלמיד).<br/>
+            <span class="text-[11px] text-slate-500 font-normal">
+              טיפ: כדי לאפשר לי לענות באופן חופשי לחלוטין בכל נושא, ודא שהמפתח GEMINI_API_KEY מוגדר בסביבת השרת.
+            </span>
+          </div>
+          <div class="text-xs text-sky-800 font-bold">
+            במה נתחיל ראמי? שיבוץ נהג, בדיקת פקדונות או דוח בוקר?
+          </div>
+        </div>
+      `;
+    } else if (q.includes('דוח בוקר') || q.includes('סידור עבודה') || q.includes('דוח יומי')) {
       responseHtml = `
         <div class="space-y-3">
           <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1.5 flex items-center justify-between">
@@ -564,15 +592,15 @@ async function startServer() {
         `;
       } else {
         responseHtml = `
-          <div class="space-y-2 text-xs">
-            <div class="font-bold text-slate-800">
-              קיבלתי, ראמי! הפקודה נבדקה מול מאגר הסדרנות וסידור העבודה.
+          <div class="space-y-2 text-slate-900 text-xs font-bold leading-relaxed">
+            <div class="text-sm text-slate-900 font-extrabold">
+              הבנתי אותך ראמי. ❤️ אני רושמת ומסנכרנת את הבקשה מול סידור העבודה.
             </div>
-            <div class="text-slate-600">
-              אני מעודכנת בכל 40+ ההזמנות מסניף 4 (החרש) וסניף 1 (התלמיד), בסטטוס הרכבים של חכמת ועלי ובמערך הפקדונות.
+            <div class="text-xs text-slate-700 font-medium bg-white/90 p-2.5 rounded-xl border border-slate-200">
+              אני מחזיקה את כל הנתונים של סניף 4 (החרש) וסניף 1 (התלמיד), הנהגים חכמת ועלי ומערך הפקדונות.
             </div>
-            <div class="p-2 rounded-xl bg-sky-50 border border-sky-200 font-bold text-sky-900">
-              תוכל לבקש: "דוח בוקר מרוכז", "בדוק שיבוץ נהגים", "הזמנה 6215454", או להזין רשימת מוצרים לחישוב פקדונות.
+            <div class="text-[11px] text-sky-900 font-bold">
+              מה המשימה הבאה שתרצה להריץ – שיבוץ נהג, בדיקת פקדונות או דוח בוקר?
             </div>
           </div>
         `;

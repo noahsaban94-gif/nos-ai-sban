@@ -19,8 +19,10 @@
 
 .bubble-noa {
   background-color: #ffffff;
-  box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.08);
+  color: #0f172a;
+  box-shadow: 0 1.5px 4px rgba(0, 0, 0, 0.08);
   border-radius: 16px 16px 16px 2px;
+  font-weight: 700;
 }
 
 .bubble-rami {

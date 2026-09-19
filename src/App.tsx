@@ -102,19 +102,19 @@ const INITIAL_NOA_MESSAGE: ChatMessage = {
   timestamp: new Date().toLocaleTimeString('he-IL', { hour: '2-digit', minute: '2-digit' }),
   text: 'שלום ראמי! ❤️ נועה כאן, יד ימינך בסדרנות ח. סבן חומרי בניין (1994) בע״מ.',
   htmlContent: `
-    <div class="space-y-2">
-      <div class="font-bold text-slate-800">
+    <div class="space-y-2 text-slate-900 font-bold text-sm leading-relaxed">
+      <div class="font-extrabold text-base text-slate-900">
         שלום ראמי! ❤️ נועה כאן, יד ימינך בסדרנות ח. סבן חומרי בניין (1994) בע״מ.
       </div>
-      <div class="text-slate-600 text-xs leading-relaxed">
+      <div class="text-slate-800 text-xs leading-relaxed font-semibold">
         אני מחוברת ומסונכרנת עם כל הגיליונות, הקומקס וצי הרכבים:
-        <ul class="list-disc list-inside mt-1 font-semibold text-slate-700">
+        <ul class="list-disc list-inside mt-1 font-bold text-slate-900 space-y-0.5">
           <li><strong>סניף 4 החרש:</strong> חכמת במרצדס מנוף (615-41-002) — בלות ומשטחים כבדים.</li>
           <li><strong>סניף 1 התלמיד:</strong> עלי באיסוזו פתוחה (654-51-701) — לוחות גבס וחלוקה.</li>
           <li><strong>מערך פקדונות 1:1:</strong> מעקב קפדני אחר שקים גדולים (60002) ומשטחי סבן (60060).</li>
         </ul>
       </div>
-      <div class="text-[11px] font-bold text-sky-700 bg-sky-50 p-2 rounded-xl border border-sky-200">
+      <div class="text-xs font-black text-sky-950 bg-sky-50 p-2.5 rounded-xl border border-sky-200">
         במה נתחיל היום ראמי? תוכל לבחור פקודה מהירה למטה או להקליד כל שאלה.
       </div>
     </div>
@@ -472,7 +472,37 @@ export default function App() {
     history: ChatMessage[],
     operationalMemories: OperationalMemoryItem[]
   ): string => {
-    const q = query.toLowerCase();
+    const q = query.toLowerCase().trim();
+
+    // 0. מענה אנושי חם לברכות, פניות ושלום
+    if (
+      q === 'היי' ||
+      q === 'שלום' ||
+      q === 'בוקר טוב' ||
+      q === 'ערב טוב' ||
+      q === 'היי נועה' ||
+      q === 'שלום נועה' ||
+      q === 'נועה' ||
+      q.startsWith('היי נועה') ||
+      q.startsWith('שלום נועה') ||
+      q.startsWith('מה קורה') ||
+      q.startsWith('מה נשמע')
+    ) {
+      return `
+        <div class="text-slate-900 font-bold text-sm leading-relaxed space-y-2">
+          <div>היי ראמי! ❤️ אני כאן ומקשיבה.</div>
+          <div class="text-xs text-slate-700 font-medium bg-white/90 p-2.5 rounded-xl border border-slate-200">
+            אני מסונכרנת עם נתוני סידור העבודה של ח. סבן (סניף 4 החרש וסניף 1 התלמיד).<br/>
+            <span class="text-[11px] text-slate-500 font-normal">
+              טיפ: כדי לאפשר לי לענות באופן חופשי לחלוטין בכל נושא, ודא שהמפתח GEMINI_API_KEY מוגדר בסביבת השרת.
+            </span>
+          </div>
+          <div class="text-xs text-sky-800 font-bold">
+            במה נתחיל ראמי? שיבוץ נהג, בדיקת פקדונות או דוח בוקר?
+          </div>
+        </div>
+      `;
+    }
 
     // 1. Filing command confirmation
     if (
@@ -854,11 +884,16 @@ export default function App() {
     }
 
     return `
-      <div class="space-y-1.5 text-xs font-bold text-slate-800">
+      <div class="space-y-2 text-slate-900 text-xs font-bold leading-relaxed">
         ${memoryBadge}
-        <div>הפקודה נקלטה, ראמי! המידע נבדק ישירות מול מאגר סידור העבודה.</div>
-        <div class="text-slate-600 font-normal">
-          אני מחזיקה את כל הנתונים של סניף 4 (החרש) וסניף 1 (התלמיד), מסלולי הנסיעה של חכמת ועלי וחישובי הפקדונות.
+        <div class="text-sm text-slate-900 font-extrabold">
+          הבנתי אותך ראמי. ❤️ אני רושמת ומסנכרנת את הבקשה מול סידור העבודה.
+        </div>
+        <div class="text-xs text-slate-700 font-medium bg-white/90 p-2.5 rounded-xl border border-slate-200">
+          אני מחזיקה את כל הנתונים של סניף 4 (החרש) וסניף 1 (התלמיד), הנהגים חכמת ועלי ומערך הפקדונות.
+        </div>
+        <div class="text-[11px] text-sky-900 font-bold">
+          מה המשימה הבאה שתרצה להריץ – שיבוץ נהג, בדיקת פקדונות או דוח בוקר?
         </div>
       </div>
     `;
@@ -1026,21 +1061,21 @@ export default function App() {
                   }}
                   className="w-10 h-10 rounded-full object-cover ring-2 ring-sky-500 shadow-xs flex-shrink-0 mt-0.5"
                 />
-                <div className="bubble-noa p-4 text-slate-800 border border-slate-200/80 shadow-xs flex-1 min-w-0">
+                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-slate-900 font-bold text-sm leading-relaxed flex-1 min-w-0">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-2">
                     <span className="font-extrabold text-xs text-sky-700 flex items-center gap-1">
                       <span>נועה AI ❤️</span>
-                      <span className="text-[10px] text-slate-400 font-normal">ח. סבן</span>
+                      <span className="text-[10px] text-slate-500 font-bold">ח. סבן</span>
                     </span>
-                    <span className="text-[10px] font-semibold text-slate-400">{m.timestamp}</span>
+                    <span className="text-[10px] font-bold text-slate-500">{m.timestamp}</span>
                   </div>
                   {m.htmlContent ? (
                     <div
-                      className="text-[13px] font-bold text-slate-800 leading-relaxed"
+                      className="text-slate-900 font-bold text-sm leading-relaxed"
                       dangerouslySetInnerHTML={{ __html: m.htmlContent }}
                     />
                   ) : (
-                    <div className="text-[13px] font-bold text-slate-800 leading-relaxed whitespace-pre-wrap">
+                    <div className="text-slate-900 font-bold text-sm leading-relaxed whitespace-pre-wrap">
                       {m.text}
                     </div>
                   )}

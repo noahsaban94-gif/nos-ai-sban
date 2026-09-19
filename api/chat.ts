@@ -105,26 +105,58 @@ const SAMPLE_ORDERS = [
 ];
 
 function generateSelfContainedSabanHtml(query: string): string {
-  const q = query.toLowerCase();
+  const q = query.toLowerCase().trim();
+
+  // 1. מענה אנושי לברכות ופניות
+  if (
+    q === 'היי' ||
+    q === 'שלום' ||
+    q === 'בוקר טוב' ||
+    q === 'ערב טוב' ||
+    q === 'היי נועה' ||
+    q === 'שלום נועה' ||
+    q === 'נועה' ||
+    q.startsWith('היי נועה') ||
+    q.startsWith('שלום נועה') ||
+    q.startsWith('מה קורה') ||
+    q.startsWith('מה נשמע')
+  ) {
+    return `
+      <div class="text-slate-900 font-bold text-sm leading-relaxed space-y-2">
+        <div>היי ראמי! ❤️ אני כאן ומקשיבה.</div>
+        <div class="text-xs text-slate-700 font-medium bg-white/90 p-2.5 rounded-xl border border-slate-200">
+          אני מסונכרנת עם נתוני סידור העבודה של ח. סבן (סניף 4 החרש וסניף 1 התלמיד).<br/>
+          <span class="text-[11px] text-slate-500 font-normal">
+            שים לב: המערכת כרגע במצב מעקף מקומי (יש לוודא שמפתח GEMINI_API_KEY מוגדר בשרת כדי שאוכל לענות באופן חופשי לחלוטין).
+          </span>
+        </div>
+        <div class="text-xs text-sky-800 font-bold">
+          במה נתחיל ראמי? שיבוץ נהג, בדיקת פקדונות או דוח בוקר?
+        </div>
+      </div>
+    `;
+  }
+
+  // 2. דוח בוקר וסידור
   if (q.includes('בוקר') || q.includes('סידור') || q.includes('דוח')) {
     return `
-      <div class="space-y-3 text-xs">
-        <div class="font-black text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
+      <div class="space-y-3 text-xs text-slate-900 font-bold">
+        <div class="font-extrabold text-sm text-slate-900 border-b border-slate-200 pb-1 flex items-center justify-between">
           <span>📋 דוח בוקר מרוכז — סדרנות ח. סבן</span>
           <span class="text-xs text-sky-700 bg-sky-50 px-2 py-0.5 rounded-full font-bold">היום</span>
         </div>
         <div class="space-y-2">
-          <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200">
+          <div class="p-2.5 rounded-xl bg-sky-50 border border-sky-200 text-sky-950">
             <div class="font-bold text-sky-900">🏗️ חכמת (מרצדס מנוף 615-41-002) — סניף 4 החרש</div>
-            <ul class="list-disc list-inside mt-1 space-y-1 text-slate-700 font-semibold">
+            <ul class="list-disc list-inside mt-1 space-y-1 text-slate-800 font-bold">
               <li>הזמנה 6215454 (שחר שאול, הבנים 7 הוד השרון) — 2 בלות סומסום, 80 שק ריצופית, פריקת מנוף.</li>
               <li>הזמנה 6215432 (מידן לירן, אוסטושינסקי כפר סבא) — טיח גבס גלון, הובלת מנוף.</li>
               <li>הזמנה 6215430 (ל.ה בניה, לב השכונה הוד השרון) — 60 בלוקים בטון, 4 בלות סומסום.</li>
             </ul>
           </div>
-          <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200">
+          <div class="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-950">
             <div class="font-bold text-emerald-900">🚛 עלי (איסוזו פתוחה 654-51-701) — סניף 1 התלמיד</div>
-            <ul class="list-disc list-inside mt-1 space-y-1 text-slate-700 font-semibold">
+            <ul class="list-disc list-inside mt-1 space-y-1 text-slate-800 font-bold">
               <li>הזמנה 5040087 (אידלסון הראל, כיסופים 12 תל אביב) — מלט אפור, סיקפלקס 40 יח'.</li>
               <li>הזמנה 5020025 (לירן/מוצקין, מוצקין 22 רעננה) — עצי פיני, משושים לבטון 130 יח'.</li>
             </ul>
@@ -133,12 +165,30 @@ function generateSelfContainedSabanHtml(query: string): string {
       </div>
     `;
   }
+
+  // 3. פקדונות
+  if (q.includes('פקדון') || q.includes('בלה') || q.includes('משטח')) {
+    return `
+      <div class="space-y-2 text-slate-900 text-xs font-bold">
+        <div class="font-extrabold text-sm border-b border-slate-200 pb-1 text-slate-900">🛡️ חוקי פקדונות סבן (1:1):</div>
+        <div>• בלות (חול/סומסום/טיט): <b>1:1 למק"ט 60002</b></div>
+        <div>• משטח סבן (60060): <b>סף 40 שק מלט אפור</b></div>
+        <div>• הובלה ללא פריקה (818050): <b>פטור מלא מפקדונות ✅</b></div>
+      </div>
+    `;
+  }
+
+  // 4. מענה ברירת מחדל אנושי
   return `
-    <div class="space-y-2 text-xs">
-      <div class="font-bold text-slate-800">היי ראמי ❤️ המערכות תקינות ומסונכרנות!</div>
-      <div class="text-slate-600">צי הרכבים (חכמת מנוף ועלי איסוזו) מסודרים לפי קווי חלוקה ומאגרי סניף 4 (החרש) וסניף 1 (התלמיד).</div>
-      <div class="p-2 rounded-xl bg-sky-50 border border-sky-200 font-bold text-sky-900">
-        שאל אותי על "דוח בוקר", "בדיקת פקדונות", "הזמנות בסידור", או מספר הזמנה ספציפי.
+    <div class="space-y-2 text-slate-900 text-xs font-bold leading-relaxed">
+      <div class="text-sm text-slate-900 font-extrabold">
+        הבנתי אותך ראמי. ❤️ אני רושמת ומסנכרנת את הבקשה מול סידור העבודה.
+      </div>
+      <div class="text-xs text-slate-700 font-medium bg-white/90 p-2.5 rounded-xl border border-slate-200">
+        אני מחזיקה את כל הנתונים של סניף 4 (החרש) וסניף 1 (התלמיד), הנהגים חכמת ועלי ומערך הפקדונות.
+      </div>
+      <div class="text-[11px] text-sky-900 font-bold">
+        מה המשימה הבאה שתרצה להריץ – שיבוץ נהג, בדיקת פקדונות או דוח בוקר?
       </div>
     </div>
   `;
@@ -220,7 +270,7 @@ export default async function handler(req: any, res: any) {
     // 2. Gemini Multi-Key Rotation across 3 keys
     const keys = getAllGeminiKeys();
     if (keys.length > 0) {
-      const candidateModels = ['gemini-3.8-flash', 'gemini-flash-latest'];
+      const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
 
       for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
         const apiKey = keys[keyIdx];
@@ -240,7 +290,7 @@ export default async function handler(req: any, res: any) {
                           SAMPLE_ORDERS,
                           null,
                           2
-                        )}\n\nראמי פונה עכשיו: "${cleanQuery}".\nהגיבי כנועה AI — מוח לוגיסטי, סדרנית ויד ימינו של ראמי, בחמימות, חדות ומקצועיות, עם שימוש בשפה המקצועית של ענף הבנייה ובפורמט HTML נקי ומעוצב.`
+                        )}\n\nראמי פונה עכשיו: "${cleanQuery}".\nהגיבי כנועה AI — מוח לוגיסטי, סדרנית ויד ימינו של ראמי, בחמימות, חדות ומקצועיות, עם שימוש בשפה המקצועית של ענף הבנייה ובפורמט HTML נקי ומעוצב עם טקסט כהה וקריא בלבד (text-slate-900).`
                       }
                     ]
                   }
