@@ -9,26 +9,31 @@ export function usePWAInstall() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState(false);
   const [isIOS, setIsIOS] = useState(false);
+  const [isSamsung, setIsSamsung] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
 
   useEffect(() => {
-    // Detect standalone mode (already installed)
+    // Detect standalone mode (already installed as PWA or Samsung WebApp)
     const isStandalone =
       window.matchMedia('(display-mode: standalone)').matches ||
       (window.navigator as unknown as { standalone?: boolean }).standalone === true;
     setIsInstalled(isStandalone);
 
-    // Detect iOS devices
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOSDevice = /iphone|ipad|ipod/.test(userAgent);
-    setIsIOS(isIOSDevice);
+    const isAndroidDevice = /android/.test(userAgent);
+    const isSamsungBrowser = /samsungbrowser/.test(userAgent) || (/samsung/i.test(navigator.userAgent) && isAndroidDevice);
 
-    // If already installed/standalone, do not intercept or prevent banners
+    setIsIOS(isIOSDevice);
+    setIsAndroid(isAndroidDevice);
+    setIsSamsung(isSamsungBrowser);
+
     if (isStandalone) {
       return;
     }
 
     const handleBeforeInstallPrompt = (e: Event) => {
-      // Prevent default mini-infobar so custom in-app install button can trigger it
+      // Prevent default mini-infobar so custom in-app install button can trigger it directly
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
     };
@@ -58,7 +63,7 @@ export function usePWAInstall() {
         return true;
       }
     } catch (err) {
-      console.debug('Install prompt dismissed or unavailable:', err);
+      console.debug('Install prompt error:', err);
     }
     return false;
   };
@@ -67,6 +72,8 @@ export function usePWAInstall() {
     isInstallable: !!deferredPrompt,
     isInstalled,
     isIOS,
+    isSamsung,
+    isAndroid,
     install,
   };
 }

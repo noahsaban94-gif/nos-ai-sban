@@ -1,11 +1,30 @@
 @import "tailwindcss";
 
 @layer base {
-  body {
+  html, body {
     font-family: 'Heebo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     background-color: #efeae2;
     touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
   }
+}
+
+/* Safe areas for Samsung Galaxy & modern notched smartphones */
+.safe-pt {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.safe-pb {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.safe-pl {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.safe-pr {
+  padding-right: env(safe-area-inset-right, 0px);
 }
 
 .whatsapp-bg {

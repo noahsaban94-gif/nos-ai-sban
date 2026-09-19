@@ -46,4 +46,5 @@ export interface OperationalMemoryItem {
   category: 'נהגים' | 'לקוחות ואתרים' | 'הנהלה וחשבונות' | 'כללי';
   text: string;
   timestamp: string;
+  tags?: string[];
 }

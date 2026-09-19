@@ -35,30 +35,35 @@ export const DEFAULT_MEMORIES: OperationalMemoryItem[] = [
     category: 'נהגים',
     text: 'חכמת (מרצדס מנוף 615-41-002) — יוצא קבוע ב-06:30 מסניף 4 החרש. אתרים עם רחובות צרים יש לשבץ ראשונים בסבב לפני תחילת עומסי תנועה.',
     timestamp: 'קבוע תפעולי',
+    tags: ['חכמת', 'מרצדס מנוף', 'סניף 4 החרש', 'רחובות צרים'],
   },
   {
     id: 'mem-2',
     category: 'נהגים',
     text: 'עלי (איסוזו חלוקה 651-51-701) — מוביל בלעדית גבס, פרופילים, צבע וציוד חנות מסניף 1 התלמיד, ופריקות ידניות / הובלה ללא פריקה.',
     timestamp: 'קבוע תפעולי',
+    tags: ['עלי', 'איסוזו', 'סניף 1 התלמיד', 'ללא פריקה'],
   },
   {
     id: 'mem-3',
     category: 'לקוחות ואתרים',
     text: 'לקוח שחר שאול (הבנים 7 הוד השרון) — לתאם תמיד טלפונית חצי שעה מראש לפני הגעת המשאית לאתר.',
     timestamp: 'קבוע תפעולי',
+    tags: ['שחר שאול', 'תיאום מראש', 'הוד השרון'],
   },
   {
     id: 'mem-4',
     category: 'לקוחות ואתרים',
     text: 'לקוח ל.ה בניה (לב השכונה) — פריקת מנוף מרפסת קומה 2 בלבד, חובה לא לחסום את ציר הגישה לאמבולנסים.',
     timestamp: 'קבוע תפעולי',
+    tags: ['ל.ה בניה', 'מנוף מרפסת', 'גישת חירום'],
   },
   {
     id: 'mem-5',
     category: 'הנהלה וחשבונות',
     text: 'כל תעודת משלוח עם חוסר מאושר, זיכוי בלות או חריגת מחיר מועברת מיידית ללינה לחיוב בהנה"ח באישור הראל או ורד.',
     timestamp: 'קבוע תפעולי',
+    tags: ['לינה', 'הנה"ח', 'זיכוי בלות', 'הראל/ורד'],
   },
 ];
 
@@ -185,12 +190,32 @@ export default function App() {
     }
   }, [memories]);
 
-  const handleAddMemory = (category: OperationalMemoryItem['category'], text: string) => {
+  const handleAddMemory = (category: OperationalMemoryItem['category'], text: string, customTags?: string[]) => {
+    // Auto-extract relevant tags from text if not provided
+    const tags: string[] = customTags && customTags.length > 0 ? customTags : [];
+    if (tags.length === 0) {
+      if (text.includes('חכמת')) tags.push('חכמת');
+      if (text.includes('עלי')) tags.push('עלי');
+      if (text.includes('מרצדס') || text.includes('מנוף')) tags.push('מנוף');
+      if (text.includes('איסוזו')) tags.push('איסוזו');
+      if (text.includes('סניף 4') || text.includes('החרש')) tags.push('סניף 4 החרש');
+      if (text.includes('סניף 1') || text.includes('התלמיד')) tags.push('סניף 1 התלמיד');
+      if (text.includes('לינה')) tags.push('לינה');
+      if (text.includes('הראל')) tags.push('הראל');
+      if (text.includes('ורד')) tags.push('ורד');
+      if (text.includes('פקדון') || text.includes('בלות') || text.includes('משטח')) tags.push('פקדונות');
+      if (text.includes('רעננה')) tags.push('רעננה');
+      if (text.includes('הוד השרון')) tags.push('הוד השרון');
+      if (text.includes('כפר סבא')) tags.push('כפר סבא');
+      if (text.includes('תל אביב')) tags.push('תל אביב');
+    }
+
     const newItem: OperationalMemoryItem = {
       id: `mem-${Date.now()}`,
       category,
       text,
       timestamp: new Date().toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric' }),
+      tags: tags.length > 0 ? tags : undefined,
     };
     setMemories((prev) => [newItem, ...prev]);
   };
@@ -204,6 +229,23 @@ export default function App() {
       setMemories(DEFAULT_MEMORIES);
     }
   };
+
+  useEffect(() => {
+    // Check if opened via PWA Shortcut or URL action
+    const params = new URLSearchParams(window.location.search);
+    const action = params.get('action');
+    if (action === 'morning_report') {
+      setTimeout(() => {
+        handleSendQuery('דוח בוקר מרוכז');
+      }, 600);
+    } else if (action === 'memory') {
+      setIsMemoryModalOpen(true);
+    } else if (action === 'deposits') {
+      setTimeout(() => {
+        handleSendQuery('חישוב פקדונות 1:1');
+      }, 600);
+    }
+  }, []);
 
   const [aiInfo, setAiInfo] = useState<{
     totalKeys: number;
@@ -900,9 +942,9 @@ export default function App() {
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col overflow-hidden text-slate-900 select-none antialiased bg-[#efeae2]">
-      {/* Header WhatsApp theme */}
-      <header className="h-16 px-3 sm:px-5 bg-[#f0f2f5] border-b border-slate-200 shadow-xs flex items-center justify-between z-20 flex-shrink-0">
+    <div className="h-screen w-screen flex flex-col overflow-hidden text-slate-900 select-none antialiased bg-[#efeae2] safe-pl safe-pr">
+      {/* Header WhatsApp theme with mobile safe top padding */}
+      <header className="h-16 safe-pt px-3 sm:px-5 bg-[#f0f2f5] border-b border-slate-200 shadow-xs flex items-center justify-between z-20 flex-shrink-0 box-content">
         <div className="flex items-center gap-3">
           <div
             className="relative cursor-pointer group"
@@ -1138,8 +1180,8 @@ export default function App() {
       {/* Quick Prompts Bar */}
       <QuickPromptsBar onSelectPrompt={(prompt) => handleSendQuery(prompt)} />
 
-      {/* Typing & Send Footer */}
-      <footer className="p-2 sm:p-3 bg-[#f0f2f5] border-t border-slate-200 z-20 flex-shrink-0">
+      {/* Typing & Send Footer with safe-pb for Samsung gesture pill / home bar */}
+      <footer className="p-2 sm:p-3 safe-pb bg-[#f0f2f5] border-t border-slate-200 z-20 flex-shrink-0">
         <form
           id="chat-form"
           onSubmit={(e) => {

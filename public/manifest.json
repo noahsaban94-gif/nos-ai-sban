@@ -1,14 +1,18 @@
 {
   "id": "/",
-  "name": "נועה AI — מוח לוגיסטי וסדרנות",
+  "name": "נועה AI — מוח לוגיסטי וסדרנות ח. סבן",
   "short_name": "נועה AI",
-  "description": "מוח לוגיסטי וסדרנות עבודה אישית של ח. סבן חומרי בניין (1994) בע״מ",
-  "start_url": "/",
+  "description": "מוח לוגיסטי, שיבוץ נהגים וסדרנות עבודה חכמה של ח. סבן חומרי בניין (1994) בע״מ",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#F8FAFC",
-  "theme_color": "#0284C7",
+  "display_override": ["standalone", "window-controls-overlay", "minimal-ui"],
+  "background_color": "#0284c7",
+  "theme_color": "#0284c7",
   "orientation": "portrait-primary",
+  "lang": "he",
+  "dir": "rtl",
+  "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
       "src": "https://i.ibb.co/GQfHTYZH/Gemini-Generated-Image-7.png",
@@ -24,9 +28,44 @@
     },
     {
       "src": "/icon.svg",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/icon.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "דוח בוקר מרוכז",
+      "short_name": "דוח בוקר",
+      "description": "הצגת דוח שיבוץ בוקר של סניף 4 החרש וסניף 1 התלמיד",
+      "url": "/?action=morning_report",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "פנקס הזיכרון",
+      "short_name": "פנקס זיכרון",
+      "description": "פתיחת פנקס הזיכרון הלוגיסטי של ראמי",
+      "url": "/?action=memory",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
+    },
+    {
+      "name": "חישוב פקדונות 1:1",
+      "short_name": "פקדונות",
+      "description": "בדיקת חוקי פקדונות בלות ומשטחים",
+      "url": "/?action=deposits",
+      "icons": [{ "src": "/icon.svg", "sizes": "192x192" }]
     }
   ]
 }

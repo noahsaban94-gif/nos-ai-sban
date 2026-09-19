@@ -2,12 +2,16 @@
 <html lang="he" dir="rtl" class="h-full">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="נועה AI">
+  <meta name="application-name" content="נועה AI">
   <meta name="theme-color" content="#0284c7">
+  <meta name="msapplication-navbutton-color" content="#0284c7">
+  <meta name="msapplication-TileColor" content="#0284c7">
+  <meta name="format-detection" content="telephone=no">
   
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" href="https://i.ibb.co/GQfHTYZH/Gemini-Generated-Image-7.png" type="image/png">
@@ -64,7 +68,26 @@
   </script>
 </head>
 <body class="h-full w-full overflow-hidden text-slate-900 bg-[#efeae2] select-none antialiased">
-  <div id="root" class="h-full w-full"></div>
+  <div id="root" class="h-full w-full">
+    <!-- Instant initial splash while bundle parses -->
+    <div id="pwa-app-loader" style="height: 100vh; width: 100vw; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #0284c7; color: white; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 20px;">
+      <div style="width: 80px; height: 80px; border-radius: 20px; background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.15);">
+        <img src="/icon.svg" alt="נועה AI" style="width: 54px; height: 54px;" />
+      </div>
+      <div style="font-size: 22px; font-weight: 900; letter-spacing: -0.5px; margin-bottom: 4px;">נועה AI ❤️</div>
+      <div style="font-size: 13px; font-weight: 700; color: #bae6fd; margin-bottom: 24px;">ח. סבן חומרי בניין (1994) בע״מ • מוח לוגיסטי</div>
+      <div style="width: 48px; height: 4px; background: rgba(255,255,255,0.3); border-radius: 4px; overflow: hidden; position: relative;">
+        <div style="width: 100%; height: 100%; background: #ffffff; animation: pwaPulse 1.2s infinite ease-in-out;"></div>
+      </div>
+    </div>
+  </div>
+  <style>
+    @keyframes pwaPulse {
+      0% { transform: translateX(-100%); }
+      50% { transform: translateX(0); }
+      100% { transform: translateX(100%); }
+    }
+  </style>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 </html>
