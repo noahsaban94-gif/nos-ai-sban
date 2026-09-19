@@ -254,7 +254,7 @@ export default function App() {
     activeKeyIndex?: number;
   }>({
     totalKeys: 3,
-    model: 'gemini-3.8-flash',
+    model: 'gemini-2.5-flash',
     status: 'connected',
   });
 

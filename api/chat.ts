@@ -270,7 +270,7 @@ export default async function handler(req: any, res: any) {
     // 2. Gemini Multi-Key Rotation across 3 keys
     const keys = getAllGeminiKeys();
     if (keys.length > 0) {
-      const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
+      const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
       for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
         const apiKey = keys[keyIdx];

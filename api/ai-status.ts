@@ -38,7 +38,7 @@ export default async function handler(req: any, res: any) {
     res.status(200).json({
       status: keys.length > 0 ? 'connected' : 'local-engine',
       totalKeys: keys.length,
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       rotationEnabled: keys.length > 1,
       message:
         keys.length > 0

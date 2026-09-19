@@ -112,7 +112,7 @@ async function startServer() {
     res.json({
       status: keys.length > 0 ? 'connected' : 'local-engine',
       totalKeys: keys.length,
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       rotationEnabled: keys.length > 1,
       message:
         keys.length > 0
@@ -240,7 +240,7 @@ async function startServer() {
     // 2. Try Gemini API with Multi-Key Rotation across all configured keys
     const keys = getAllGeminiKeys();
     if (keys.length > 0) {
-      const candidateModels = ['gemini-2.5-flash', 'gemini-1.5-flash', 'gemini-flash-latest'];
+      const candidateModels = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-1.5-flash'];
 
       for (let keyIdx = 0; keyIdx < keys.length; keyIdx++) {
         const apiKey = keys[keyIdx];
