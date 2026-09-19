@@ -280,63 +280,73 @@ export const InteractiveActionCard: React.FC<InteractiveActionCardProps> = ({
     const formattedMessage = data.formattedMessage || '';
 
     return (
-      <div className="mt-2.5 p-3 rounded-2xl bg-emerald-50/90 border border-emerald-300 text-xs text-slate-800 space-y-2.5 shadow-xs" dir="rtl">
-        <div className="flex items-center justify-between border-b border-emerald-200 pb-2">
-          <div className="flex items-center gap-1.5 font-black text-emerald-950">
+      <div className="mt-2.5 p-3.5 rounded-2xl bg-gradient-to-br from-emerald-50/95 via-teal-50/90 to-sky-50/80 border-2 border-emerald-300/80 text-xs text-slate-800 space-y-3 shadow-sm hover:border-emerald-400 transition-all duration-300" dir="rtl">
+        <div className="flex items-center justify-between border-b border-emerald-200/80 pb-2.5">
+          <div className="flex items-center gap-2 font-black text-emerald-950">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-600"></span>
+            </span>
             <MessageCircle className="w-4 h-4 text-emerald-700" />
-            <span>שידור הודעת וואטסאפ (Make.com Webhook)</span>
+            <span className="text-[13px]">כרטיס שידור חי: Make.com & WhatsApp</span>
           </div>
-          <span className="text-[10px] font-black bg-emerald-200 text-emerald-900 px-2 py-0.5 rounded-full">
-            Make.com
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="ai-shimmer-badge text-[10px] font-black text-emerald-900 border border-emerald-300 px-2.5 py-0.5 rounded-full shadow-2xs">
+              Live Webhook ⚡
+            </span>
+          </div>
         </div>
 
-        <div className="space-y-1">
-          <div className="font-extrabold text-sm text-slate-900">
-            הזמנה #{o.orderNumber} — {o.customerName}
+        <div className="bg-white/85 p-2.5 rounded-xl border border-emerald-200/70 space-y-1">
+          <div className="font-extrabold text-sm text-slate-900 flex items-center justify-between">
+            <span>הזמנה #{o.orderNumber} — {o.customerName}</span>
+            <span className="text-[11px] font-black text-emerald-700 bg-emerald-100/80 px-2 py-0.5 rounded-full">
+              {o.warehouse}
+            </span>
           </div>
-          <div className="text-[11px] text-slate-600">
-            <strong>מחסן:</strong> {o.warehouse} | <strong>כתובת:</strong> {o.deliveryAddress}
+          <div className="text-[11px] text-slate-600 flex items-center gap-2">
+            <span>📍 <strong>יעד:</strong> {o.deliveryAddress}</span>
           </div>
-          <div className="text-[11px] text-slate-600">
-            <strong>שיבוץ נהג:</strong> {o.driver}
+          <div className="text-[11px] text-slate-600 flex items-center gap-2">
+            <span>🚚 <strong>נהג משובץ:</strong> {o.driver}</span>
           </div>
         </div>
 
         {formattedMessage && (
-          <div className="p-2.5 bg-white rounded-xl border border-emerald-200 text-[11px] font-mono text-slate-700 whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed">
+          <div className="p-2.5 bg-white/95 rounded-xl border border-emerald-200 text-[11px] font-mono text-slate-700 whitespace-pre-wrap max-h-40 overflow-y-auto leading-relaxed shadow-inner">
             {formattedMessage}
           </div>
         )}
 
-        <div className="flex flex-wrap items-center gap-2 pt-1">
+        <div className="flex flex-wrap items-center gap-2 pt-0.5">
           <button
             onClick={() => handleDispatchWebhook(o, webhookUrl, true)}
             disabled={dispatchStatus === 'sending'}
-            className="px-3 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 disabled:opacity-50 text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+            className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 disabled:opacity-50 text-white font-extrabold text-xs transition-all duration-200 flex items-center gap-2 cursor-pointer shadow-sm hover:shadow active:scale-98"
           >
             {dispatchStatus === 'sending' ? (
               <Loader2 className="w-4 h-4 animate-spin" />
             ) : dispatchStatus === 'success' ? (
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4 text-emerald-200" />
             ) : (
               <Send className="w-4 h-4 rotate-180" />
             )}
             <span>
               {dispatchStatus === 'sending'
-                ? 'בודק תקשורת מול Make...'
+                ? 'משדר עכשיו ל-Make...'
                 : dispatchStatus === 'success'
                 ? 'הבדיקה הצליחה!'
-                : 'בצע בדיקת שידור עכשיו'}
+                : 'בצע בדיקת שידור עכשיו ⚡'}
             </span>
           </button>
 
           <button
             onClick={() => handleDispatchWebhook(o, webhookUrl, false)}
             disabled={dispatchStatus === 'sending'}
-            className="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs"
+            className="px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-900 disabled:opacity-50 text-white font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-98"
           >
-            <span>שגר הודעה רגילה לנהג</span>
+            <Send className="w-3.5 h-3.5 rotate-180 text-slate-300" />
+            <span>שגר לנהג</span>
           </button>
 
           {o.wazeUrl && (
@@ -344,7 +354,7 @@ export const InteractiveActionCard: React.FC<InteractiveActionCardProps> = ({
               href={o.wazeUrl}
               target="_blank"
               rel="noreferrer"
-              className="px-2.5 py-1.5 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-900 font-bold text-xs transition flex items-center gap-1"
+              className="px-2.5 py-2 rounded-xl bg-sky-100 hover:bg-sky-200 text-sky-900 font-bold text-xs transition flex items-center gap-1 shadow-2xs active:scale-98"
             >
               <Navigation className="w-3.5 h-3.5 text-sky-700" />
               <span>Waze</span>
@@ -356,16 +366,16 @@ export const InteractiveActionCard: React.FC<InteractiveActionCardProps> = ({
               href={o.whatsappUrl}
               target="_blank"
               rel="noreferrer"
-              className="px-2.5 py-1.5 rounded-xl bg-white hover:bg-slate-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition flex items-center gap-1"
+              className="px-2.5 py-2 rounded-xl bg-white hover:bg-slate-100 text-emerald-800 border border-emerald-300 font-bold text-xs transition flex items-center gap-1 shadow-2xs active:scale-98"
             >
               <MessageCircle className="w-3.5 h-3.5 text-emerald-600" />
-              <span>פתח צ'אט ישיר</span>
+              <span>וואטסאפ ישיר</span>
             </a>
           )}
         </div>
 
         {dispatchResult && (
-          <div className={`p-2.5 rounded-xl text-[11px] font-bold space-y-1 ${
+          <div className={`p-2.5 rounded-xl text-[11px] font-bold space-y-1 animate-fade-in ${
             dispatchStatus === 'success' ? 'bg-white text-emerald-900 border border-emerald-300 shadow-xs' : 'bg-rose-50 text-rose-800 border border-rose-200'
           }`}>
             <div>{dispatchResult}</div>

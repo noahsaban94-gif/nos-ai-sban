@@ -1170,22 +1170,25 @@ export default function App() {
             }
 
             return (
-              <div key={m.id} className="flex items-start gap-3 max-w-xl">
-                <img
-                  src={AVATAR_URL}
-                  alt="נועה AI"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = '/icon.svg';
-                  }}
-                  className="w-10 h-10 rounded-full object-cover ring-2 ring-sky-500 shadow-xs flex-shrink-0 mt-0.5"
-                />
-                <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 text-slate-900 font-bold text-sm leading-relaxed flex-1 min-w-0">
+              <div key={m.id} className="flex items-start gap-3 max-w-xl animate-fade-in">
+                <div className="relative flex-shrink-0 mt-0.5">
+                  <img
+                    src={AVATAR_URL}
+                    alt="נועה AI"
+                    onError={(e) => {
+                      (e.target as HTMLImageElement).src = '/icon.svg';
+                    }}
+                    className="w-10 h-10 rounded-full object-cover ring-2 ring-sky-500 shadow-xs"
+                  />
+                  <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-emerald-500 border-2 border-white rounded-full"></span>
+                </div>
+                <div className="bg-white/98 backdrop-blur-xs p-4 rounded-2xl shadow-xs border border-slate-200/90 hover:border-sky-300/80 transition-all duration-300 text-slate-900 font-bold text-sm leading-relaxed flex-1 min-w-0">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-1.5 mb-2">
-                    <span className="font-extrabold text-xs text-sky-700 flex items-center gap-1">
+                    <span className="font-extrabold text-xs text-sky-700 flex items-center gap-1.5">
                       <span>נועה AI ❤️</span>
-                      <span className="text-[10px] text-slate-500 font-bold">ח. סבן</span>
+                      <span className="text-[10px] bg-sky-50 text-sky-800 border border-sky-200/80 px-1.5 py-0.2 rounded-full font-bold">סדרנית ח. סבן</span>
                     </span>
-                    <span className="text-[10px] font-bold text-slate-500">{m.timestamp}</span>
+                    <span className="text-[10px] font-bold text-slate-400">{m.timestamp}</span>
                   </div>
                   {m.htmlContent ? (
                     <div
@@ -1236,21 +1239,47 @@ export default function App() {
             </div>
           )}
 
-          {/* Typing Indicator */}
+          {/* Modern Shimmer & Pulse Wave Thinking Indicator */}
           {isTyping && !retryStatus && (
-            <div id="typing-indicator" className="flex items-start gap-3 max-w-xl animate-fade-in">
-              <img
-                src={AVATAR_URL}
-                alt="נועה AI"
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-sky-500 shadow-xs flex-shrink-0 mt-0.5"
-              />
-              <div className="bubble-noa px-4 py-3 flex items-center gap-2 border border-slate-200/80">
-                <span className="w-2 h-2 bg-sky-500 rounded-full animate-bounce"></span>
-                <span className="w-2 h-2 bg-sky-500 rounded-full animate-bounce [animation-delay:0.2s]"></span>
-                <span className="w-2 h-2 bg-sky-500 rounded-full animate-bounce [animation-delay:0.4s]"></span>
-                <span className="text-xs font-bold text-slate-600 mr-1.5">
-                  נועה מעבדת נתונים בגיליון...
+            <div id="typing-indicator" className="flex items-start gap-3 max-w-xl animate-fade-in" dir="rtl">
+              <div className="relative flex-shrink-0 mt-0.5">
+                <img
+                  src={AVATAR_URL}
+                  alt="נועה AI"
+                  className="w-10 h-10 rounded-full object-cover ring-2 ring-sky-400 shadow-sm"
+                />
+                <span className="absolute -top-0.5 -right-0.5 flex h-3 w-3">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-sky-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-3 w-3 bg-sky-500"></span>
                 </span>
+              </div>
+
+              <div className="ai-thinking-card bg-white/95 backdrop-blur-xs px-4 py-3.5 rounded-2xl border border-sky-300 shadow-sm flex flex-col gap-2 min-w-[240px]">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-2">
+                    {/* Animated sound wave bars */}
+                    <div className="flex items-center gap-1 h-5 px-1">
+                      <span className="ai-wave-bar w-1 bg-sky-500 rounded-full [animation-delay:0s]"></span>
+                      <span className="ai-wave-bar w-1 bg-emerald-500 rounded-full [animation-delay:0.2s]"></span>
+                      <span className="ai-wave-bar w-1 bg-sky-600 rounded-full [animation-delay:0.4s]"></span>
+                      <span className="ai-wave-bar w-1 bg-teal-400 rounded-full [animation-delay:0.15s]"></span>
+                      <span className="ai-wave-bar w-1 bg-sky-400 rounded-full [animation-delay:0.35s]"></span>
+                    </div>
+                    <span className="ai-shimmer-text font-black text-xs tracking-tight">
+                      נועה חושבת ומעבדת...
+                    </span>
+                  </div>
+
+                  <span className="ai-shimmer-badge text-[10px] font-black text-sky-800 px-2 py-0.5 rounded-full border border-sky-200">
+                    Live Stream
+                  </span>
+                </div>
+
+                {/* Shimmer skeleton lines giving fluid preview feedback */}
+                <div className="space-y-1.5 pt-0.5">
+                  <div className="h-2 w-48 rounded-full bg-gradient-to-r from-sky-100 via-sky-200 to-sky-100 animate-pulse"></div>
+                  <div className="h-2 w-32 rounded-full bg-gradient-to-r from-slate-100 via-slate-200 to-slate-100 animate-pulse [animation-delay:0.2s]"></div>
+                </div>
               </div>
             </div>
           )}

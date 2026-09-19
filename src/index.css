@@ -95,3 +95,68 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Modern AI Chat Shimmer & Pulse Animations */
+@keyframes ai-shimmer-sweep {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes ai-ambient-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(14, 165, 233, 0.25), 0 2px 8px rgba(0, 0, 0, 0.06);
+    border-color: rgba(56, 189, 248, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 8px rgba(14, 165, 233, 0.08), 0 8px 20px rgba(14, 165, 233, 0.15);
+    border-color: rgba(14, 165, 233, 0.85);
+  }
+}
+
+@keyframes ai-soundwave {
+  0%, 100% {
+    height: 6px;
+  }
+  50% {
+    height: 18px;
+  }
+}
+
+.ai-shimmer-text {
+  background: linear-gradient(
+    90deg,
+    #0284c7 0%,
+    #0284c7 25%,
+    #38bdf8 50%,
+    #059669 75%,
+    #0284c7 100%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: ai-shimmer-sweep 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ai-shimmer-badge {
+  background: linear-gradient(
+    90deg,
+    rgba(224, 242, 254, 0.8) 0%,
+    rgba(255, 255, 255, 0.95) 50%,
+    rgba(224, 242, 254, 0.8) 100%
+  );
+  background-size: 200% 100%;
+  animation: ai-shimmer-sweep 2.2s ease-in-out infinite;
+}
+
+.ai-thinking-card {
+  animation: ai-ambient-pulse 2.4s ease-in-out infinite;
+}
+
+.ai-wave-bar {
+  animation: ai-soundwave 1.2s ease-in-out infinite;
+}
